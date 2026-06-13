@@ -1,0 +1,42 @@
+{
+  "meta": {
+    "project": "{{PROJECT_NAME}}",
+    "generatedAt": "AAAA-MM-DD",
+    "source": "controle/<task-de-auditoria>",
+    "note": "Atualizar este JSON no closure de cada task; gen-painel.mjs regenera o HTML. NUNCA editar o PAINEL.html à mão."
+  },
+  "legend": {
+    "done": "✅ existe e completa (FE + backend onde aplicável)",
+    "fe-only": "🔵 tela navegável; backend STUB/mock (2º momento)",
+    "partial": "🟡 existe mas incompleta (falta estado/fluxo)",
+    "missing": "⚪ planejada mas NÃO existe no código",
+    "backend": "🔧 lógica de backend faltante (NÃO é tela)"
+  },
+  "summary": {
+    "headline": "Resumo narrativo do estado do projeto — substitua a cada closure."
+  },
+  "priorities": [
+    { "rank": 1, "title": "<próxima prioridade>", "blocker": "<bloqueio>", "why": "<por quê>" }
+  ],
+  "surfaces": [
+    {
+      "id": "app",
+      "name": "App (Cliente)",
+      "epics": [
+        {
+          "epic": "E01",
+          "label": "Bootstrap",
+          "screens": [
+            { "name": "Exemplo", "route": "/exemplo", "status": "missing", "evidence": "ainda não implementada", "note": "tela-semente do template" }
+          ]
+        }
+      ]
+    }
+  ],
+  "backends": [
+    { "id": "exemplo-backend", "epic": "E01", "task": "T01.01", "title": "<backend faltante>", "status": "backend", "evidence": "<diretório inexistente>", "note": "<dependência externa, se houver>" }
+  ],
+  "staleDocs": [
+    { "doc": "docs/exemplo.md", "says": "<o que o doc afirma>", "reality": "<o que é verdade no código>", "severity": "baixa" }
+  ]
+}

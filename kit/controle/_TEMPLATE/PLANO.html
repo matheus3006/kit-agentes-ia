@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="sepia">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PLANO — <slug></title>
+<style>
+:root,[data-theme="sepia"]{--bg:#f3ead8;--card:#ece1c8;--ink:#2b2317;--accent:#7a1f22;--ok:#3e6b25;--warn:#7a5a1d;--line:#c9b98f}
+[data-theme="claro"]{--bg:#fff;--card:#f1f1ee;--ink:#1a1a1a;--accent:#7a1f22;--line:#d4d4cd}
+[data-theme="escuro"]{--bg:#1d1a14;--card:#27231b;--ink:#ece4d4;--accent:#e08a8d;--line:#4a4334}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:18px/1.55 Georgia,serif;padding:18px 16px 60px}
+main{max-width:880px;margin:0 auto}h1,h2{color:var(--accent)}h2{border-bottom:2px solid var(--line);padding-bottom:4px}
+table{border-collapse:collapse;width:100%}td,th{border:1px solid var(--line);padding:6px 9px;text-align:left;vertical-align:top}
+.why{background:var(--card);border-left:4px solid var(--accent);padding:8px 12px;font-style:italic}
+code{background:var(--card);padding:1px 5px;border-radius:4px;font-family:ui-monospace,monospace}
+.bar{position:sticky;top:0;background:var(--card);border-bottom:2px solid var(--line);padding:8px 12px;display:flex;gap:8px;z-index:9}
+.bar button{font:15px Georgia,serif;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:4px 12px;cursor:pointer}
+</style></head>
+<body>
+<div class="bar"><strong>Leitura:</strong>
+  <button onclick="setT('sepia')">Sépia</button><button onclick="setT('claro')">Claro</button>
+  <button onclick="setT('escuro')">Escuro</button><button onclick="setF(-1)">A−</button><button onclick="setF(1)">A+</button></div>
+<main>
+  <h1>PLANO — &lt;slug&gt;</h1>
+  <p><strong>Estimativa:</strong> … · <strong>Início real:</strong> … · <strong>Branch:</strong> <code>feat/…</code></p>
+
+  <h2>O QUÊ</h2>
+  <ul><li>…entrega 1…</li><li>…2-4 bullets…</li></ul>
+
+  <h2>POR QUÊ</h2>
+  <p>…motivação + constraints…</p>
+  <div class="why">…divergência auditada e cravada, se houver…</div>
+
+  <h2>COMO</h2>
+  <ol><li>…passo citando arquivo…</li><li>…(backend: TDD red→green por passo)…</li></ol>
+
+  <h2>RISCOS</h2>
+  <table><tr><th>Risco</th><th>Mitigação</th></tr><tr><td>…</td><td>…</td></tr></table>
+
+  <h2>Resumo do plano</h2>
+  <p><strong>O QUÊ:</strong> … <strong>POR QUÊ:</strong> … <strong>COMO:</strong> … <strong>RISCOS:</strong> …</p>
+</main>
+<script>
+function setT(t){document.documentElement.dataset.theme=t;localStorage.setItem('plano-theme',t)}
+function setF(d){var b=document.body,s=Math.max(14,Math.min(26,parseFloat(localStorage.getItem('plano-fs')||18)+d*2));b.style.fontSize=s+'px';localStorage.setItem('plano-fs',s)}
+setT(localStorage.getItem('plano-theme')||'sepia');var fs=localStorage.getItem('plano-fs');if(fs)document.body.style.fontSize=fs+'px';
+</script>
+</body></html>

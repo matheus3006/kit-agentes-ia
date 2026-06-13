@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="sepia">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Método de trabalho com agentes — visão geral</title>
+<style>
+:root,[data-theme="sepia"]{--bg:#efe4cf;--bg2:#e7d9bd;--card:#f5ecd9;--ink:#332a1b;--ink2:#5c5038;--accent:#7a1f22;--accent2:#3e6b25;--line:#cdba90;--chip:#e2d2b0}
+[data-theme="claro"]{--bg:#f3f3f0;--bg2:#e9e9e4;--card:#ffffff;--ink:#1f1f24;--ink2:#5a5a63;--accent:#7a1f22;--accent2:#3e6b25;--line:#d8d8d1;--chip:#ecec16}
+[data-theme="claro"]{--chip:#e7e7e0}
+[data-theme="escuro"]{--bg:#1c1a15;--bg2:#15140f;--card:#26231b;--ink:#ece3d2;--ink2:#b7ac95;--accent:#e69a9d;--accent2:#a6cf6f;--line:#403a2c;--chip:#322d22}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:18px/1.6 Georgia,'Iowan Old Style',serif;}
+.bar{position:sticky;top:0;z-index:20;background:var(--bg2);border-bottom:2px solid var(--line);padding:9px 16px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.bar strong{color:var(--ink2);font:600 13px/1 system-ui,sans-serif;letter-spacing:.04em;text-transform:uppercase;margin-right:4px}
+.bar button{font:15px Georgia,serif;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:5px 13px;cursor:pointer}
+.bar button:hover{border-color:var(--accent)}
+main{max-width:860px;margin:0 auto;padding:30px 20px 90px}
+h1{color:var(--accent);font-size:34px;line-height:1.15;margin:0 0 6px}
+.sub{color:var(--ink2);font-size:19px;margin:0 0 28px}
+h2{color:var(--accent);font-size:24px;border-bottom:2px solid var(--line);padding-bottom:6px;margin:38px 0 14px}
+h3{color:var(--accent2);font-size:18px;margin:18px 0 4px}
+p{margin:10px 0}
+.lead{background:var(--card);border-left:5px solid var(--accent);padding:14px 18px;border-radius:0 10px 10px 0;font-size:18.5px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+.card .n{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;font:700 14px system-ui;margin-right:8px}
+.card h3{display:flex;align-items:center;margin-top:0;color:var(--ink)}
+.card p{font-size:16px;color:var(--ink2);margin:6px 0 0}
+.flow{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:6px 18px;font:14.5px/1.7 ui-monospace,'SF Mono',Menlo,monospace;color:var(--ink);overflow-x:auto;white-space:pre}
+code{background:var(--chip);padding:1px 6px;border-radius:5px;font:15px ui-monospace,Menlo,monospace}
+ul{padding-left:22px}li{margin:6px 0}
+.tag{display:inline-block;background:var(--chip);color:var(--ink2);border:1px solid var(--line);border-radius:999px;padding:2px 11px;font:600 13px system-ui;margin:2px 4px 2px 0}
+a{color:var(--accent);text-decoration:none;border-bottom:1px solid var(--line)}
+.foot{margin-top:40px;color:var(--ink2);font-size:15px;border-top:1px solid var(--line);padding-top:14px}
+@media(max-width:640px){.grid{grid-template-columns:1fr}h1{font-size:28px}}
+</style>
+</head>
+<body>
+<div class="bar">
+  <strong>Leitura</strong>
+  <button onclick="setT('sepia')">Sépia</button>
+  <button onclick="setT('claro')">Claro</button>
+  <button onclick="setT('escuro')">Escuro</button>
+  <button onclick="setF(-1)">A−</button>
+  <button onclick="setF(1)">A+</button>
+</div>
+<main>
+  <h1>Método de trabalho com agentes de IA</h1>
+  <p class="sub">Um kit replicável para todos os seus próximos apps — o mesmo jeito de trabalhar do Cadillac, num formato agnóstico de projeto.</p>
+
+  <p class="lead">Agentes de IA têm dois problemas crônicos: <b>amnésia</b> (esquecem o contexto entre sessões) e <b>deriva de escopo</b> (editam além do combinado). O método resolve isso com <b>trilhos determinísticos impostos por hooks</b> — não por disciplina. Um hook que <i>nega</i> a edição é a diferença entre uma convenção que se esquece e um trilho que não deixa sair.</p>
+
+  <p>Princípio que atravessa tudo: <b>evidência antes de afirmação</b>. Nada fecha sem prova — o diário nunca fica atrás do código, a documentação derivada é gerada (não escrita à mão), e até a instalação do kit é auto-verificável.</p>
+
+  <h2>Os 5 pilares</h2>
+  <div class="grid">
+    <div class="card"><h3><span class="n">1</span>Controle de contexto</h3><p>Toda edição de produção exige uma <i>task</i> ativa, planejada e aprovada em <code>controle/&lt;task-id&gt;/</code> — 4 arquivos e 7 fases. Imposto pelo <i>watchdog</i>.</p></div>
+    <div class="card"><h3><span class="n">2</span>Hooks de validação</h3><p>6 hooks Python (stdlib): 1 guardrail que bloqueia, 1 que propaga status, 1 de telemetria e 3 lembretes anti-deriva.</p></div>
+    <div class="card"><h3><span class="n">3</span>Protótipo HTML+JSX</h3><p>Antes de codar frontend, um protótipo React+Babel <i>sem build</i> cobre todos os estados visuais e é aprovado. Substitui o Figma.</p></div>
+    <div class="card"><h3><span class="n">4</span>Documentação viva</h3><p>Glossário canônico, roadmap com <code>STATE</code> vivo por épico, ADRs numerados, painel gerado de JSON e smoke tests.</p></div>
+    <div class="card" style="grid-column:1/-1"><h3><span class="n">5</span>Skills &amp; commands</h3><p>A camada que automatiza tudo na ordem certa: <code>/aprovar-plano</code>, <code>/nova-tela-fe</code>, <code>/iniciar-prototipo</code>, a skill de fechamento <code>execute-closure</code>, e o subagent de pesquisa read-only.</p></div>
+  </div>
+
+  <h2>Como uma tarefa nasce, vive e fecha</h2>
+  <div class="flow">nova tarefa: &lt;slug&gt; - &lt;desc&gt;        (o watchdog registra a task)
+  └─ fase: limites        escopo + critérios de aceite  (LIMITES.md)
+  └─ fase: planejamento   o plano legível              (PLANO.html)
+  └─ fase: aprovacao      apresenta a você
+       você digita  "aprovado"
+  └─ fase: execucao       edições liberadas; (frontend: protótipo → aprovação → port)
+  └─ fase: verificacao    cada critério com EVIDÊNCIA   (LEDGER.md)
+  └─ fase: concluida      fechamento propaga roadmap / painel / vitrine</div>
+  <p>Entre cada edição e a próxima, o watchdog exige que o diário (<code>ESTADO</code> + <code>LEDGER</code>) seja atualizado. É a invariante mais poderosa contra amnésia: o registro <b>nunca</b> fica atrás do código.</p>
+
+  <h2>O que está neste kit</h2>
+  <p><span class="tag">guia/ · a documentação</span><span class="tag">kit/ · os artefatos copiáveis</span><span class="tag">LEIA-ME.html · esta página</span></p>
+  <ul>
+    <li><b>guia/</b> — um documento por pilar + o <a href="guia/INSTALL.md">guia de instalação</a> (auto-verificável) e o de <a href="guia/ADAPTACAO.md">adaptação</a>. Comece por <a href="guia/00-visao-geral.md">00-visao-geral</a>.</li>
+    <li><b>kit/</b> — <code>AGENTS.md</code>, <code>CLAUDE.md</code> (template), <code>.claude/</code> (hooks + skills + commands + subagent), <code>controle/_TEMPLATE/</code>, <code>prototipos_html/_template/</code>, <code>docs/</code> (templates) e <code>scripts/</code>.</li>
+  </ul>
+
+  <h2>Por que confiar que funciona</h2>
+  <p>Os hooks não são scripts ad-hoc: vêm com 2 suítes de teste que rodam o hook como subprocesso isolado e provam o comportamento. Neste kit, já parametrizado:</p>
+  <ul>
+    <li><b>watchdog</b>: 6/6 — nega edição sem aprovação, libera após aprovação, sobrevive à troca de sessão.</li>
+    <li><b>vitrine</b>: todos os cenários PASS — lembrete dispara/silencia na hora certa.</li>
+  </ul>
+  <p>Instalar num projeto novo termina com um passo que <b>demonstra ao vivo</b> a transição negar → liberar. Só então a instalação é declarada concluída.</p>
+
+  <div class="foot">Derivado do método do projeto Cadillac Delivery e generalizado. Esta página é só o resumo visual — a fonte de verdade operacional é a pasta <code>guia/</code> (markdown, lida pelos agentes).</div>
+</main>
+<script>
+function setT(t){document.documentElement.dataset.theme=t;try{localStorage.setItem('leiame-theme',t)}catch(e){}}
+function setF(d){var b=document.body,cur=parseFloat((b.style.fontSize||'18').replace('px',''))||18,s=Math.max(15,Math.min(26,cur+d*1.5));b.style.fontSize=s+'px';try{localStorage.setItem('leiame-fs',s)}catch(e){}}
+try{var t=localStorage.getItem('leiame-theme');if(t)document.documentElement.dataset.theme=t;var fs=localStorage.getItem('leiame-fs');if(fs)document.body.style.fontSize=fs+'px';}catch(e){}
+</script>
+</body>
+</html>

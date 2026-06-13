@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>{{PROJECT_NAME}} — Prototipo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet"/>
+
+<style>
+:root {
+  --font-display: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* Brand — TEMPLATE: ajuste para a marca do seu projeto */
+  --primary:        #0F172A;
+  --primary-deep:   #020617;
+  --primary-soft:   #E2E8F0;
+  --accent:         #DC2626;
+  --accent-soft:    #FEE2E2;
+
+  /* Light theme tokens */
+  --bg:             #F8FAFC;
+  --fg:             #0F172A;
+  --surface:        #FFFFFF;
+  --surface-2:      #F1F5F9;
+  --input-bg:       #F1F5F9;
+  --border:         rgba(15, 23, 42, 0.08);
+  --border-strong:  rgba(15, 23, 42, 0.18);
+  --muted:          #64748B;
+  --tabbar-bg:      rgba(248, 250, 252, 0.92);
+  --header-blur-bg: rgba(255, 255, 255, 0.78);
+
+  /* Status */
+  --ok:             #16A34A;
+  --ok-soft:        #DCFCE7;
+  --warn:           #F59E0B;
+  --warn-soft:      #FEF3C7;
+  --danger:         #DC2626;
+  --danger-soft:    #FEE2E2;
+
+  /* Spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-full: 999px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
+  --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 12px 28px rgba(15, 23, 42, 0.14);
+
+  /* Toast */
+  --toast-bg:       #0F172A;
+  --toast-fg:       #F8FAFC;
+}
+
+[data-theme="dark"] {
+  --primary:        #F8FAFC;
+  --primary-deep:   #FFFFFF;
+  --primary-soft:   #1E293B;
+  --accent:         #F87171;
+  --accent-soft:    #450A0A;
+
+  --bg:             #020617;
+  --fg:             #F1F5F9;
+  --surface:        #0F172A;
+  --surface-2:      #1E293B;
+  --input-bg:       #1E293B;
+  --border:         rgba(248, 250, 252, 0.08);
+  --border-strong:  rgba(248, 250, 252, 0.18);
+  --muted:          #94A3B8;
+  --tabbar-bg:      rgba(2, 6, 23, 0.92);
+  --header-blur-bg: rgba(15, 23, 42, 0.78);
+
+  --ok:             #4ADE80;
+  --ok-soft:        #14532D;
+  --warn:           #FBBF24;
+  --warn-soft:      #451A03;
+  --danger:         #F87171;
+  --danger-soft:    #450A0A;
+
+  --toast-bg:       #F1F5F9;
+  --toast-fg:       #0F172A;
+}
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0;
+  min-height: 100%;
+  font-family: var(--font-display);
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+body {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--fg);
+  overflow-x: hidden;
+}
+
+#root { width: 100%; min-height: 100vh; display: flex; flex-direction: column; }
+
+input, textarea, button, select { font-family: inherit; }
+button { cursor: pointer; }
+
+/* Showcase chrome */
+.showcase-shell {
+  display: flex; flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  position: relative;
+}
+
+.showcase-header {
+  position: sticky; top: 0; z-index: 50;
+  display: flex; align-items: center; gap: var(--space-5);
+  padding: var(--space-3) var(--space-6);
+  background: var(--header-blur-bg);
+  backdrop-filter: saturate(160%) blur(14px);
+  -webkit-backdrop-filter: saturate(160%) blur(14px);
+  border-bottom: 1px solid var(--border);
+}
+.showcase-brand {
+  display: flex; align-items: center; gap: var(--space-2);
+  font-weight: 800; font-size: 18px; letter-spacing: -0.4px;
+  color: var(--primary-deep);
+}
+[data-theme="dark"] .showcase-brand { color: var(--primary); }
+.showcase-brand .accent { color: var(--accent); }
+
+.showcase-tabs {
+  display: flex; gap: var(--space-1);
+  padding: var(--space-1);
+  background: var(--surface-2);
+  border-radius: var(--radius-md);
+}
+.showcase-tabs button {
+  border: 0; background: transparent;
+  padding: var(--space-2) var(--space-4);
+  font-size: 13.5px; font-weight: 700;
+  color: var(--muted);
+  border-radius: var(--radius-sm);
+}
+.showcase-tabs button.active {
+  background: var(--surface);
+  color: var(--fg);
+  box-shadow: var(--shadow-sm);
+}
+
+.showcase-switchers {
+  margin-left: auto;
+  display: flex; gap: var(--space-3); align-items: center; flex-wrap: wrap;
+}
+.sw-group {
+  display: flex; gap: 2px;
+  background: var(--surface-2);
+  border-radius: var(--radius-md);
+  padding: 3px;
+}
+.sw-group button {
+  border: 0; background: transparent;
+  padding: 6px 11px;
+  font-size: 12px; font-weight: 700;
+  color: var(--muted);
+  border-radius: 7px;
+}
+.sw-group button.active {
+  background: var(--primary);
+  color: var(--surface);
+}
+.sw-label {
+  font-size: 11px; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.6px;
+  font-weight: 800; margin-right: var(--space-1);
+}
+
+.showcase-body {
+  flex: 1;
+  display: flex;
+  align-items: center; justify-content: center;
+  padding: var(--space-5);
+  min-height: 0;
+  overflow: auto;
+}
+
+::-webkit-scrollbar { width: 0; height: 0; }
+</style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+
+  <script type="text/babel" src="components/i18n.jsx"></script>
+  <script type="text/babel" src="components/data.jsx"></script>
+  <script type="text/babel" src="components/icons.jsx"></script>
+  <script type="text/babel" src="components/ui.jsx"></script>
+  <script type="text/babel" src="components/app.jsx"></script>
+
+  <script type="text/babel">
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<Showcase/>);
+  </script>
+</body>
+</html>
