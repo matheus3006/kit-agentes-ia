@@ -1,6 +1,7 @@
 ---
 name: incrementar-prototipo
-description: Use quando for CRESCER um protótipo cadillac que JÁ existe — fundir uma nova tela/estado/papel num consolidado existente, sem reescrever o motor. Gatilhos: "adicionar tela ao protótipo", "incrementar", "fundir segunda tela", "nova variante no showcase". Para um protótipo NOVO do zero use criar-prototipo.
+description: >-
+  Use quando for CRESCER um protótipo cadillac que JÁ existe — fundir uma nova tela/estado/papel num consolidado existente, sem reescrever o motor. Gatilhos: "adicionar tela ao protótipo", "incrementar", "fundir segunda tela", "nova variante no showcase". Para um protótipo NOVO do zero use criar-prototipo.
 ---
 
 # Incrementar Protótipo (modelo cadillac)
