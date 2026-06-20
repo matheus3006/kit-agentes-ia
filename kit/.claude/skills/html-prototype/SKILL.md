@@ -1,9 +1,11 @@
 ---
 name: html-prototype
-description: Gera prototipos HTML+JSX (React 18 + Babel standalone) para validacao visual antes da implementacao na stack real. Use sempre que iniciar uma nova tela, fluxo ou componente de frontend, ou quando o usuario pedir prototipo, mockup, tela, screen, ou showcase.
+description: Use APENAS para um protótipo legado de TELA ÚNICA (single-showcase) rápido. Para protótipos multi-tela/multi-papel/hub (modelo cadillac) use criar-prototipo (default). Skill mantida por compatibilidade — "superseded" pelo criar-prototipo.
 ---
 
 # html-prototype
+
+> **Superseded:** o caminho default para protótipos é `/criar-prototipo`. Esta skill cobre só o caso single-showcase legado.
 
 Skill que substitui o fluxo Figma pelo padrao HTML+JSX rodado direto no
 browser via Babel standalone (React 18 + Babel standalone via CDN).

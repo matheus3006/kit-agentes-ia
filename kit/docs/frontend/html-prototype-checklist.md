@@ -38,11 +38,12 @@ prototipos_html/<task-id>/
 - [ ] Raios (--radius-sm/md/lg/full)
 - [ ] Sombras (--shadow-sm/md/lg)
 
-## i18n (pt-BR only no MVP — decisão entrevista 2026-05-19)
-- [ ] `TRANSLATIONS = { 'pt-BR': {...} }` apenas — sem EN/ES no MVP
-- [ ] Hook `useT()` para acesso (sem parâmetro `lang` no MVP)
+## i18n (estrutura obrigatória, lista de locales configurável)
+- [ ] `TRANSLATIONS = { '<locale>': {...} }` presente — estrutura obrigatória mesmo
+      com um único locale (evita refactor depois)
+- [ ] Lista de locales configurável por projeto (default `pt-BR,en`)
+- [ ] Hook `useT()` para acesso; merge não-destrutivo ao adicionar locale
 - [ ] Sem strings hard-coded nos componentes
-- [ ] Estrutura permite expansão pós-MVP (basta adicionar chave de locale)
 
 ## Showcase
 - [ ] Header sticky com brand + tabs + switchers
@@ -51,7 +52,7 @@ prototipos_html/<task-id>/
 - [ ] Switcher de plataforma (iOS | Android | Web) se aplicável
 - [ ] Modo "All Screens" com grade scrollável + zoom controls
 - [ ] ErrorBoundary por tab (uma tela quebrada não derruba o resto)
-- ~~Switcher de idioma~~ — removido: MVP pt-BR only
+- [ ] Switcher de idioma (locales configuráveis; default `pt-BR,en`)
 
 ## Acessibilidade do protótipo
 - [ ] Contraste mínimo 4.5:1 para texto normal, 3:1 para large
@@ -83,12 +84,34 @@ Antes de portar para o stack real:
 
 Sem aprovação, NÃO iniciar implementação no projeto real.
 
-## Pós-ship — refletir no #cliente (anti-drift)
-Depois que a tela é aprovada e shippada, no **closure da task**:
-- [ ] Refletir a tela aprovada no protótipo consolidado `#cliente`
-  (`prototipos_html/2026-05-20-cliente-mvp/`) — merge DENTRO dele, não aba nova no hub.
-- [ ] Bump do `?v=` nos scripts do `index.html` (cache-bust).
-- [ ] **Redeploy** da vitrine (commit+push → `<seu-repo-de-vitrine>` auto-deploy) + conferir live.
+## §6 — Régua de conformância (12/12)
 
-Regra fixa (memória `feedback-vitrine-prototipos` · também em AGENTS.md e na skill
-`execute-closure`); reforçada pelo hook `vitrine-sync-reminder.py` no closure.
+Régua canônica do modelo cadillac. Vale para qualquer protótipo HTML+JSX (gerado
+por `criar-prototipo`/`incrementar-prototipo` ou single-showcase legado). Um
+consolidado conforme bate 12/12; os 2 eixos de domínio entram como itens
+**OPCIONAIS (opt-in)** — N/A quando o produto não tem o atributo.
+
+- [ ] **1.** Carrega via 1 `index.html` consolidado; React 18 UMD + Babel standalone.
+- [ ] **2.** Ordem de load preservada (`i18n → i18n-chrome → ui → nav → registry → device-frame → showcase → app-shell → screens → app`).
+- [ ] **3.** Cada tela = 1 IIFE; hooks no topo; sem 2 funções top-level colidindo.
+- [ ] **4.** `?v=` cache-bust em toda tag local + iframe do hub.
+- [ ] **5.** Registry `window.<DS>Screens` + `registerScreen`/`getScreen` + `ScreenBoundary`.
+- [ ] **6.** Device-frame fit-to-stage (ResizeObserver) responsivo; `100dvh`/safe-center.
+- [ ] **7.** Design tokens só na camada `tokens.css`/`ds.jsx`; device/chrome via merge, sem tocar canônico.
+- [ ] **8.** i18n estrutura presente (merge não-destrutivo); locales configuráveis (default `pt-BR,en`).
+- [ ] **9.** Showcase/hub: `PROTOS[]` manifesto coerente; `wip:true` = placeholder.
+- [ ] **10.** Sem segredos/PII logados (conforme `{{COMPLIANCE_REQS}}`).
+- [ ] **11.** Console limpo ao servir (zero erro).
+- [ ] **12.** Motor não-editado: só `ds.jsx`/`screens.jsx`/tokens mudam; `engine.jsx`/`templates/` intactos.
+- [ ] **(opt-in A)** Cor semântica reservada nunca vira CTA (`{{RESERVED_SEMANTIC_TOKEN}}`/`{{ADR_REF}}`).
+- [ ] **(opt-in B)** White-label: marca com fonte única `brandFor()`; shell nunca mostra marca do fornecedor.
+
+## Pós-ship — refletir no showcase consolidado (anti-drift)
+Depois que a tela é aprovada e shippada, no **closure da task**:
+- [ ] Refletir as telas aprovadas no showcase consolidado — merge DENTRO do
+  consolidado existente, não aba nova no hub.
+- [ ] Bump do `?v=` nos scripts do `index.html` (cache-bust).
+- [ ] **Redeploy** da vitrine (commit+push → auto-deploy) + conferir live.
+
+Regra fixa (também em `AGENTS.md` e na skill `execute-closure`); reforçada pelo
+hook `vitrine-sync-reminder.py` no closure.
