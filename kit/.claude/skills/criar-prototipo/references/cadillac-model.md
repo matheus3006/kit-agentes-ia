@@ -58,6 +58,24 @@ app.jsx             (entry · render AppShell)
 No exemplo mínimo, `ui.jsx`+`nav.jsx`+`i18n.jsx` estão fundidos em `ds.jsx`, e o motor inteiro em
 `engine.jsx` — mesma ordem relativa (`ds.jsx → engine.jsx → screens.jsx → app.jsx`).
 
+### Onde o motor mora no install (copie pra dentro de `prototipos_html/`)
+
+Num install real o motor-fonte fica em `.claude/skills/criar-prototipo/templates/` (split) e o bundle
+self-contained em `.claude/skills/criar-prototipo/examples/minimal/engine.jsx` — ambos **fora** de
+`prototipos_html/`. O `python3 -m http.server` serve **com raiz em `prototipos_html/`**: um `<script src>`
+que tenta subir até `.claude/...` não resolve sob essa raiz e é frágil. Logo, **copie o motor para dentro
+da pasta servida**, nunca o referencie in-place:
+
+- **Consolidado único (concatenado):** copie `examples/minimal/engine.jsx` para a pasta do protótipo
+  (`prototipos_html/<task-id>/engine.jsx`).
+- **SPLIT / multi-papel:** copie os `templates/*.jsx` necessários para um `_shared-<ds>/` **sob**
+  `prototipos_html/` (ex.: `prototipos_html/_shared-<ds>/registry.jsx`). O consolidado então aponta com
+  caminho relativo que **fica dentro da raiz servida** (ex.: `../_shared-<ds>/registry.jsx`), nunca
+  `../../.claude/...`.
+
+Regra única: **todo `<script src>` local resolve sob a raiz servida `prototipos_html/`**.
+`<task-id>` = slug com prefixo de data (ex.: `AAAA-MM-DD-<slug>-mvp`).
+
 ---
 
 ## 3 · Mobile: fit-to-stage + single-pane

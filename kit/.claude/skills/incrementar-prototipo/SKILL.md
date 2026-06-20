@@ -43,8 +43,10 @@ e cobre o que a irmã não cobre: fundi-la com segurança.
    - **concatenado** (self-contained): um `engine.jsx` + `ds.jsx`/`screens.jsx`. Ex.: `examples/minimal/`.
    - Confirme que o alvo está **aprovado** (LEDGER/memória). Se o consolidado não existe → não é incremento,
      é `/criar-prototipo`.
-2. **Garanta a fase certa (watchdog).** Para editar `prototipos_html/` a task que governa o consolidado
-   precisa estar em `execucao` — em `verificacao`/`concluida` o Edit é **bloqueado**. Reabra se preciso.
+2. **Garanta a fase certa (watchdog).** *(Só quando o projeto usa `controle/`.)* Para editar
+   `prototipos_html/` a task que governa o consolidado precisa estar em `execucao` — em
+   `verificacao`/`concluida` o Edit é **bloqueado**. Reabra se preciso. **Protótipo bare/standalone (sem
+   `controle/`)?** Não há task a reabrir — pule este passo e edite direto.
 3. **Escreva a tela** — pela camada 3 da `/criar-prototipo` (delegado). Uma IIFE + `registerScreen`.
 4. **Faça a cirurgia de integração** — o delta cirúrgico. Os passos exatos (antes/depois de cada arquivo,
    nas duas variantes) estão em **`references/incremento-delta.md`** — leia antes de tocar. Resumo:
@@ -53,15 +55,23 @@ e cobre o que a irmã não cobre: fundi-la com segurança.
 5. **Passe pelo gate de aprovação do incremento** (ver abaixo) — antes de declarar fundido.
 6. **Reflita na vitrine.** A tela já vive no consolidado (reflexo inerente). Confirme o hub apontando com
    `?v=` novo; atualize o `ref` da entrada `PROTOS` se a superfície ganhou algo notável. Deploy = decisão do
-   founder (AGENTS.md §Vitrine).
+   founder (AGENTS.md §Vitrine). **Sem hub (consolidado único self-contained)? Esse passo é no-op** — não há
+   `PROTOS[]` para bumpar; só bump o `?v=` local nas tags `<script>` do próprio consolidado.
 
 ## Gate de aprovação do incremento (disciplina)
+
+> **Escopo:** o gate formal (task em `execucao`, LEDGER em `controle/<task-id>/`, OK explícito registrado)
+> vale **quando o projeto usa a governança `controle/` do kit**. Num protótipo bare/standalone (sem
+> `controle/`), não há task nem LEDGER — valem só os pré-requisitos técnicos (console limpo, 8 estados,
+> dark/mobile, 12/12) e a aprovação informal do founder; não trave um install limpo caçando task pra reabrir.
 
 Crescer toca um produto **já aprovado** — fundir cedo demais contamina o que estava validado. Antes de
 declarar o incremento fundido:
 
 - Sobe no preview **sem erro de console** (`preview_console_logs level=error` → "No console logs").
-- Os **8 estados** da nova tela + **dark/light** + **mobile** (device-frame **e** chrome colapsado) conferidos.
+- Os **8 estados** da nova tela (4 do switcher: default/loading/empty/error · + 4 de interação vivos nos
+  componentes: hover/focus/active/disabled) + **dark/light** + **mobile** (device-frame **e** chrome
+  colapsado) conferidos.
 - **Conformância 12/12 mantida** (lista abaixo) — o delta não pode regredir nenhum eixo do consolidado.
 - **Screenshot** do(s) estado(s)-chave + **aprovação explícita do founder** registrada no LEDGER da task.
 
@@ -83,7 +93,7 @@ nunca vira CTA — ver `criar-prototipo` §Invariantes.
 
 | Gotcha | Por quê | Faça |
 |--------|---------|------|
-| **`prototipos_html/` só editável em `execucao`** | O watchdog bloqueia Edit lá em `verificacao`/`concluida`. | Reabra a task que governa o consolidado antes de fundir. |
+| **`prototipos_html/` só editável em `execucao`** *(só com `controle/`)* | Quando o projeto usa `controle/`, o watchdog bloqueia Edit lá em `verificacao`/`concluida`. Sem `controle/` não há watchdog. | Reabra a task que governa o consolidado antes de fundir. Bare/standalone: não se aplica. |
 | **`?v=` parcial** | Bumpar só a tag nova deixa o browser servir o motor/telas em cache → você revisa código velho. | Bump `?v=` em **todas** as tags locais do consolidado + iframe do hub. |
 | **Screen depois do app** | A tela precisa estar registrada antes do `app.jsx` renderizar. | Insira `screens/screen-*.jsx` **antes** de `app.jsx` na ordem de carga. |
 | **2º componente no topo** | Babel standalone compartilha escopo global → "already declared". | 1 IIFE por screen (a IIFE isola o escopo). |

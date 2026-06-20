@@ -7,11 +7,15 @@ genérica da variante split (`<ds>-<papel>/` + `_shared-<ds>/`).
 ## As 4 cirurgias (sempre as mesmas; o lugar muda por variante)
 
 1. **nav-key** — registrar a tela na árvore de navegação (`ROLES.<papel>.nav`).
-2. **strings** — chaves i18n da tela (rótulo da nav + textos dos 8 estados), pt-BR + en.
+2. **strings** — chaves i18n da tela (rótulo da nav + textos dos 4 estados do switcher), pt-BR + en.
 3. **screen** — a tela como IIFE `registerScreen('navKey', C)`, **na ordem de carga antes do app**.
-4. **`?v=` + hub** — bump do cache-bust em TODA tag local + reflexo no hub.
+4. **`?v=` + hub** — bump do cache-bust em TODA tag local + reflexo no hub (no-op se não houver hub).
 
 A tela em si (IIFE, hooks no topo, 8 estados) é da **camada 3 da `/criar-prototipo`** — delegada, não repetida aqui.
+
+> **"8 estados" = 4 + 4.** São os **4 estados do switcher** que o `screenState` carrega
+> (default/loading/empty/error) **mais** os **4 de interação** vivos nos componentes
+> (hover/focus/active/disabled). Só os 4 do switcher geram strings i18n.
 
 > **Qual variante?** Há um `_shared-<ds>/` + `<ds>-<papel>/`? → **SPLIT**. Há um `engine.jsx` único e
 > `ds.jsx`/`screens.jsx` self-contained? → **CONCATENADO**. Não misture as duas.
@@ -133,10 +137,14 @@ No split, **uma tela = um arquivo** (uma IIFE), dentro do consolidado-alvo (não
 `screens/*.jsx` e o `app.jsx`. Bumpar só a tag nova deixa o browser servir motor/telas em cache (você revisa
 código velho e "conserta" fantasmas). O bump aqui muda só a chave de cache **desta** página.
 
-### Hub `prototipos_html/index.html` — refletir
+### Hub `prototipos_html/index.html` — refletir (só se houver hub)
 
 O consolidado **já tem** entrada no array `PROTOS`. Crescer = **bump do `?v=`** no `src` dela (e atualizar o
 `ref` se a superfície ganhou algo notável). Não crie entrada nova (entrada nova = consolidado novo = `/criar-prototipo`).
+
+> **Sem hub?** Num consolidado único self-contained (concatenado, ex.: `examples/minimal/`) **não há
+> `prototipos_html/index.html` nem `PROTOS[]`** — este passo é **no-op**. O bump do `?v=` já foi feito nas
+> tags `<script>` locais do próprio consolidado (passo 4 da variante CONCATENADO); nada mais a refletir.
 
 ```js
 // ANTES
@@ -150,7 +158,9 @@ O consolidado **já tem** entrada no array `PROTOS`. Crescer = **bump do `?v=`**
 ## Checklist da cirurgia (rode antes do gate de aprovação)
 
 - [ ] nav-key acrescentada ao **papel certo** (e ícone existe em `ICON_PATHS`/`icons.jsx`).
-- [ ] strings `nav.<key>` + 8 estados em pt-BR **e** en (zero string hard-coded na tela).
+- [ ] strings `nav.<key>` + os 4 estados do switcher (default/loading/empty/error) em pt-BR **e** en (zero
+      string hard-coded na tela). Os 4 estados de interação (hover/focus/active/disabled) são CSS/componente,
+      não geram string própria.
 - [ ] tela = **1 IIFE** terminando em `registerScreen('<key>', C)`; hooks no topo.
 - [ ] split: arquivo em `<surface>/screens/` **e** `<script>` inserido **antes** do `app.jsx`.
 - [ ] **`?v=` bumpado em TODA tag local** do consolidado + `src` do iframe no hub.

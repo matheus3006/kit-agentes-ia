@@ -43,6 +43,19 @@ Fluxo de revisão do founder: **showcase** (vê todas as telas/estados) → apro
 Trabalhe em `prototipos_html/<task-id>/` (ou na raiz para o hub). **Comece copiando `examples/minimal/`**
 e adaptando — `templates/` tem os arquivos-fonte avulsos para referência.
 
+> **`<task-id>`** = slug com prefixo de data, ex.: `AAAA-MM-DD-<slug>-mvp` (ex.: `2026-06-20-relatorios-mvp`).
+
+> **Copie o motor para dentro da pasta servida — nunca aponte pra `.claude/...`.** Num install real o motor
+> vive em `.claude/skills/criar-prototipo/templates/` (e o bundle self-contained em
+> `examples/minimal/engine.jsx`), **fora** de `prototipos_html/`. O `python3 -m http.server` tem como raiz
+> `prototipos_html/`, então um `<script src>` que sobe até `.claude/...` **não resolve** (e é frágil). Por isso:
+> - **Consolidado único (concatenado):** copie `examples/minimal/engine.jsx` para dentro da pasta do protótipo.
+> - **SPLIT / multi-papel:** copie os `templates/*.jsx` necessários para um `_shared-<ds>/` **sob**
+>   `prototipos_html/`.
+>
+> Regra: **todo `<script src>` local resolve sob a raiz servida `prototipos_html/`** — nada de caminho que
+> alcance `.claude/...`.
+
 **Duas formas de montar o motor** (escolha pelo tamanho — não misture):
 - **Self-contained / descartável (default):** copie `examples/minimal/` — o motor vem **concatenado** num
   único `engine.jsx`. Ordem de carga **curta**: `ds.jsx → engine.jsx → screens.jsx → app.jsx`. Use para 1
@@ -58,8 +71,10 @@ e adaptando — `templates/` tem os arquivos-fonte avulsos para referência.
    via `i18n-chrome`, merge não-destrutivo), primitivas (`Icon`/`Card`/`EmptyState`/`Tag`), `ROLES`/`nav`,
    `Shell`/`MobileShell`, `brandFor`. **Não toque no `engine.jsx`** — é o motor provado.
 3. **Escreva as telas** em `screens.jsx` (ou `screens/screen-*.jsx` num protótipo grande): cada tela é uma
-   **IIFE** que chama `registerScreen('navKey', Component)`. A tela recebe `{ device, screenState }` e deve
-   cobrir os estados que fizerem sentido (ver os 8 estados no checklist).
+   **IIFE** que chama `registerScreen('navKey', Component)`. A tela recebe `{ device, screenState }` —
+   `screenState` é **um dos 4 estados do switcher** (default/loading/empty/error). Cubra os que fizerem
+   sentido; os 4 estados de interação (hover/focus/active/disabled) ficam vivos nos componentes, não no
+   switcher (ver Verificação).
 4. **Confira a ordem de carga** no `index.html` (load-bearing) e ponha `?v=<data>` em TODA tag local.
    Curta: `ds → engine → screens → app`. Longa (split): i18n → i18n-chrome → ds/ui → registry →
    device-frame → (shell) → showcase → app-shell → screens → app.
@@ -129,12 +144,15 @@ o atributo correspondente — num protótipo fora desse domínio, ignore.
 - Abre no preview **sem erro de console** (use o MCP de preview; cheque `preview_console_logs`). Sem preview
   MCP? Sirva a pasta (`python3 -m http.server --directory prototipos_html`) e cheque no browser; como sanity
   de sintaxe offline, rode os `.jsx` pelo `@babel/standalone` (preset react).
-- Os **8 estados** (default/hover/focus/active/disabled/loading/empty/error), **dark/light** e **idiomas**
+- Os **8 estados** (os **4 do switcher de estado** — default/loading/empty/error — **+** os **4 de
+  interação** que ficam vivos nos componentes — hover/focus/active/disabled), **dark/light** e **idiomas**
   conferidos no showcase. Mobile: device-frame iOS+Android e o chrome colapsado num viewport estreito.
 - Invariantes de produto **opcionais** quando a tela tocar o domínio de `{{PROJECT_NAME}}`: cor
   semântica reservada, white-label (zero leak da marca do fornecedor), papéis, e não logar PII/segredos
   conforme `{{COMPLIANCE_REQS}}` (régua 12/12 em `docs/frontend/html-prototype-checklist.md` §6).
-- Prova visual: screenshot do(s) estado(s)-chave para a validação do founder; aprovação registrada no LEDGER.
+- Prova visual: screenshot do(s) estado(s)-chave para a validação do founder. **Quando o projeto usa
+  `controle/`:** aprovação registrada no LEDGER. Num protótipo bare/standalone (sem `controle/`), basta a
+  aprovação informal do founder — não há LEDGER a preencher.
 
 **Auto-teste do motor:** se você scaffoldou do zero, a prova de que o modelo está íntegro é o exemplo
 `examples/minimal/` subir limpo. Se um protótipo novo dá erro de console que o exemplo não dá, o problema
