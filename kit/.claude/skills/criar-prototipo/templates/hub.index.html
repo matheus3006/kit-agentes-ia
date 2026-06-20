@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<!-- ┌─ TEMPLATE: HUB da vitrine (raiz de prototipos_html/) ────────────────────────┐
+     │ Tabs por papel/superfície → carrega o consolidado num <iframe>. Deep-link     │
+     │ por #hash. wip:true = não servido (placeholder c/ referência). ?v= cache-bust.│
+     │ Substitua: a marca (SEAM) e o array PROTOS. CSS já colapsa em mobile.          │
+     └─────────────────────────────────────────────────────────────────────────────┘ -->
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>__APP__ · Protótipos</title>
+<!-- SEAM: tipografia do hub — substitua pelo {{TYPOGRAPHY}} do projeto (links de fonte + font-family abaixo). -->
+
+<style>
+  /* SEAM: cores da marca do hub (independem do design-system dos protótipos) */
+  :root {
+    --bar-bg: #0A0A0A; --bar-line: rgba(255,255,255,0.09);
+    --text: #F3F4F6; --muted: #8A8F98; --accent: var(--brand, #2563EB);
+    --pill-bg: #16181B; --iframe-bg: #0E0F11;
+    --ease-out: cubic-bezier(.23, 1, .32, 1);
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { margin: 0; height: 100%; font-family: system-ui, -apple-system, sans-serif; -webkit-font-smoothing: antialiased; }
+  body { display: flex; flex-direction: column; background: var(--bar-bg); }
+
+  .hub-bar { flex-shrink: 0; height: 54px; display: flex; align-items: center; gap: 20px; padding: 0 20px; background: var(--bar-bg); border-bottom: 1px solid var(--bar-line); }
+  .hub-brand { display: flex; align-items: baseline; gap: 8px; }
+  .hub-brand .wm { font-size: 15px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; line-height: 1; }
+  .hub-brand .wm.accent { color: var(--accent); }
+  .hub-brand .tag { font-family: ui-monospace, monospace; font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+
+  .hub-switch { display: flex; gap: 3px; background: var(--pill-bg); border-radius: 11px; padding: 4px; }
+  .hub-switch button { border: 0; background: transparent; padding: 7px 16px; font: inherit; font-size: 13px; font-weight: 600; color: var(--muted); border-radius: 8px; cursor: pointer; transition: color 160ms var(--ease-out), background 160ms var(--ease-out); }
+  .hub-switch button:hover { color: var(--text); }
+  .hub-switch button:active { transform: scale(0.97); }
+  .hub-switch button.active { background: var(--accent); color: #fff; }
+  .hub-switch button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .hub-switch button.wip { opacity: 0.5; }
+
+  .hub-meta { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+  .hub-open { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--muted); text-decoration: none; padding: 7px 12px; border-radius: 8px; border: 1px solid var(--bar-line); }
+  .hub-open:hover { color: var(--text); border-color: var(--muted); }
+
+  #frame { flex: 1; width: 100%; border: 0; background: var(--iframe-bg); }
+  .placeholder { flex: 1; display: flex; align-items: center; justify-content: center; background: var(--iframe-bg); color: var(--text); padding: 2rem; }
+  .placeholder .card { max-width: 520px; text-align: center; }
+  .placeholder h2 { font-size: 1.4rem; margin: 0 0 0.5rem; }
+  .placeholder p { color: var(--muted); margin: 0; line-height: 1.6; font-size: 14px; }
+
+  @media (max-width: 720px) {
+    .hub-bar { height: auto; flex-wrap: wrap; gap: 8px; padding: 8px 12px; }
+    .hub-brand .tag { display: none; }
+    .hub-switch { order: 3; flex-basis: 100%; }
+    .hub-switch button { flex: 1; padding: 10px 8px; font-size: 12.5px; }
+  }
+</style>
+</head>
+<body>
+  <header class="hub-bar">
+    <!-- SEAM: marca do hub -->
+    <div class="hub-brand">
+      <span class="wm">__APP__</span><span class="wm accent">.proto</span>
+      <span class="tag">Protótipos · {{PROJECT_NAME}}</span>
+    </div>
+    <div class="hub-switch" id="switch" role="tablist" aria-label="Protótipos"></div>
+    <div class="hub-meta">
+      <a class="hub-open" id="openNew" target="_blank" rel="noopener">Abrir em nova aba &#8599;</a>
+    </div>
+  </header>
+  <iframe id="frame" title="Protótipo"></iframe>
+  <div class="placeholder" id="placeholder" hidden>
+    <div class="card"><h2 id="placeholder-title"></h2><p id="placeholder-desc"></p></div>
+  </div>
+
+  <script>
+    // SEAM: uma entrada por consolidado. wip:true = placeholder (não servido). ?v= = cache-bust.
+    var PROTOS = [
+      { key: 'exemplo',  label: 'Exemplo',  src: 'exemplo/index.html?v=1',  wip: false, ref: 'exemplo/ · consolidado de origem (ver criar-prototipo/examples/minimal/)' },
+      { key: 'arquivo',  label: 'Arquivo',  src: '',                        wip: true,  ref: 'Protótipos antigos fora da vitrine — abrir direto se precisar.' }
+    ];
+
+    var frame = document.getElementById('frame');
+    var placeholder = document.getElementById('placeholder');
+    var placeholderTitle = document.getElementById('placeholder-title');
+    var placeholderDesc = document.getElementById('placeholder-desc');
+    var switchEl = document.getElementById('switch');
+    var openNew = document.getElementById('openNew');
+    var current = null;
+
+    function showPlaceholder(proto) {
+      frame.hidden = true; placeholder.hidden = false;
+      placeholderTitle.textContent = proto.label;
+      placeholderDesc.textContent = proto.ref;
+      openNew.removeAttribute('href'); openNew.style.opacity = '0.4'; openNew.style.pointerEvents = 'none';
+    }
+    function showFrame(proto) {
+      placeholder.hidden = true; frame.hidden = false;
+      frame.src = proto.src; frame.title = 'Protótipo ' + proto.label;
+      openNew.href = proto.src; openNew.style.opacity = ''; openNew.style.pointerEvents = '';
+    }
+    function select(key, pushHash) {
+      var proto = null;
+      for (var i = 0; i < PROTOS.length; i++) { if (PROTOS[i].key === key) { proto = PROTOS[i]; break; } }
+      if (!proto) proto = PROTOS[0];
+      if (proto.key === current) return;
+      current = proto.key;
+      if (proto.wip || !proto.src) showPlaceholder(proto); else showFrame(proto);
+      var btns = switchEl.children;
+      for (var j = 0; j < btns.length; j++) {
+        var on = btns[j].dataset.key === proto.key;
+        btns[j].classList.toggle('active', on);
+        btns[j].setAttribute('aria-selected', on ? 'true' : 'false');
+      }
+      if (pushHash) location.hash = proto.key;
+    }
+    PROTOS.forEach(function (p) {
+      var b = document.createElement('button');
+      b.textContent = p.label; b.dataset.key = p.key; b.setAttribute('role', 'tab');
+      if (p.wip) b.classList.add('wip');
+      b.addEventListener('click', function () { select(p.key, true); });
+      switchEl.appendChild(b);
+    });
+    window.addEventListener('hashchange', function () { select((location.hash || '').replace('#', ''), false); });
+    select((location.hash || '').replace('#', '') || PROTOS[0].key, false);
+  </script>
+</body>
+</html>

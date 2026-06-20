@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<!-- ┌─ TEMPLATE: consolidado tela-pronta de UM papel/superfície (modelo cadillac) ─┐
+     │ Substitua: __APP__ (slug do design-system) · __ROLE__ (papel) · __VER__       │
+     │ (cache-bust, ex.: 20260620a) · a lista de screens.                            │
+     │                                                                              │
+     │ ORDEM DE CARGA É LOAD-BEARING (gotcha): i18n → i18n-chrome → ds → ui →         │
+     │ registry → device-frame → shell → showcase → app-shell → screens → app.        │
+     │ Um arquivo que usa TRANSLATIONS/ROLES/Icon antes de existirem dá undefined.    │
+     │ ?v=__VER__ em TODA tag local (e no iframe do hub) — bump ao publicar.          │
+     └─────────────────────────────────────────────────────────────────────────────┘ -->
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>__APP__ · __ROLE__ — Protótipo</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<!-- SEAM: troque pela(s) fonte(s) do seu design-system -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+<!-- SEAM: tokens do seu design-system (fonte única). Pode ser <style> inline ou arquivo. -->
+<link rel="stylesheet" href="tokens.css?v=__VER__" />
+
+<!-- Chrome do showcase + responsividade (colapsa em viewport estreito). Ver references/cadillac-model.md -->
+<style>
+  .showcase-header { position: sticky; top: 0; z-index: 50; }
+  .showcase-body   { align-items: safe center; justify-content: safe center; }
+  ::-webkit-scrollbar { width: 0; height: 0; }
+  @media (max-width: 640px) {
+    .showcase-header    { flex-wrap: nowrap; gap: 8px; padding: 8px 12px; }
+    .showcase-brand     { flex-shrink: 0; }
+    .brand-suffix       { display: none; }
+    .showcase-switchers { flex-wrap: nowrap; overflow-x: auto; min-width: 0; gap: 8px; }
+    .sw-label           { display: none; }
+    .showcase-body      { padding: 12px; }
+  }
+</style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+
+  <!-- Design-system (SEU · seam) — i18n primeiro, depois primitivas e cascas -->
+  <script type="text/babel" src="ds/i18n.jsx?v=__VER__"></script>
+  <script type="text/babel" src="../templates/i18n-chrome.jsx?v=__VER__"></script>
+  <script type="text/babel" src="ds/ui.jsx?v=__VER__"></script>
+  <script type="text/babel" src="ds/nav.jsx?v=__VER__"></script>
+
+  <!-- Motor (GENÉRICO · não re-derivar) — copiado de templates/ -->
+  <script type="text/babel" src="../templates/registry.jsx?v=__VER__"></script>
+  <script type="text/babel" src="../templates/device-frame.jsx?v=__VER__"></script>
+  <script type="text/babel" src="../templates/showcase.jsx?v=__VER__"></script>
+  <script type="text/babel" src="../templates/app-shell.jsx?v=__VER__"></script>
+
+  <!-- Telas deste consolidado (auto-registram em window.AppScreens · ANTES do app) -->
+  <script type="text/babel" src="screens/screen-home.jsx?v=__VER__"></script>
+  <!-- + screen-<outra>.jsx … -->
+
+  <!-- Entry: renderiza o app já travado no papel __ROLE__ -->
+  <script type="text/babel" src="app.jsx?v=__VER__"></script>
+</body>
+</html>
