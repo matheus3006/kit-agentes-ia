@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<!-- Exemplo MÍNIMO do modelo cadillac (self-contained, rodável). 1 consolidado, 2 telas.
+     Sirva esta pasta por HTTP (ex.: python3 -m http.server) e abra index.html.
+     Ordem de carga: ds.jsx → engine.jsx → screens.jsx → app.jsx (load-bearing). -->
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Exemplo mínimo · modelo cadillac</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+<style>
+  /* Tokens (SEU design-system · fonte única). Light = :root, dark = override. */
+  :root {
+    --bg: #F7F8FA; --surface: #FFFFFF; --surface-2: #EEF1F5; --border: #E2E6EC;
+    --text: #1A1D24; --text-muted: #5A6473; --text-faint: #97A0AE;
+    --brand: #2563EB; --brand-fg: #FFFFFF; --brand-soft: rgba(37,99,235,0.12);
+    --success: #16A34A; --warning: #D97706; --danger: #DC2626;
+    --warning-soft: rgba(217,119,6,0.14); --danger-soft: rgba(220,38,38,0.12);
+    --radius: 8px; --radius-pill: 999px; --r: 8px; --rb: 12px;
+    --ease: cubic-bezier(.23, 1, .32, 1); --e1: 0 1px 2px rgba(16,24,40,0.06);
+  }
+  [data-theme="dark"] {
+    --bg: #0E0F13; --surface: #16181D; --surface-2: #1E222A; --border: #2A2F3A;
+    --text: #ECEEF2; --text-muted: #9AA3B2; --text-faint: #6B7484;
+    --brand: #3B82F6; --brand-fg: #FFFFFF; --brand-soft: rgba(59,130,246,0.18);
+    --success: #22C55E; --warning: #F59E0B; --danger: #F87171;
+    --warning-soft: rgba(245,158,11,0.16); --danger-soft: rgba(248,113,113,0.16);
+    --e1: 0 1px 2px rgba(0,0,0,0.4);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
+  #root { height: 100%; }
+  button { font-family: inherit; }
+
+  /* Chrome do showcase + responsividade (colapsa em viewport estreito · estilo cadillac) */
+  .showcase-header { position: sticky; top: 0; z-index: 50; }
+  .showcase-body   { align-items: safe center; justify-content: safe center; }
+  ::-webkit-scrollbar { width: 0; height: 0; }
+  @media (max-width: 640px) {
+    .showcase-header    { flex-wrap: nowrap; gap: 8px; padding: 8px 12px; }
+    .showcase-brand     { flex-shrink: 0; }
+    .brand-suffix       { display: none; }
+    .showcase-switchers { flex-wrap: nowrap; overflow-x: auto; min-width: 0; gap: 8px; }
+    .sw-label           { display: none; }
+    .showcase-body      { padding: 12px; }
+  }
+</style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+
+  <!-- design-system (você edita) → motor (não toca) → telas → entry -->
+  <script type="text/babel" src="ds.jsx?v=20260620a"></script>
+  <script type="text/babel" src="engine.jsx?v=20260620a"></script>
+  <script type="text/babel" src="screens.jsx?v=20260620a"></script>
+  <script type="text/babel" src="app.jsx?v=20260620a"></script>
+</body>
+</html>
