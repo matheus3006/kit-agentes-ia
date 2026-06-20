@@ -19,12 +19,69 @@ Cada hook tem (ou pode ter) um bloco `# ===== CONFIG =====` no topo.
 > Se renomear `KILL_SWITCH_ENV`, atualize também o `env.pop(...)` no topo de
 > `test_context_control_watchdog.py` (ele zera essa var antes de testar).
 
-## Placeholders `{{...}}` a substituir
-| Placeholder | Aparece em |
-|-------------|-----------|
-| `{{PROJECT_NAME}}` | `CLAUDE.md`, `docs/ROADMAP.md`, `docs/roadmap/painel-data.json` (`meta.project`), `docs/CONTEXT.md` (implícito), template de protótipo (`index.html` title, `i18n.jsx` appName, comentários) |
+## Placeholders — DUAS camadas distintas (não confundir)
 
-Busque-os com: `grep -rn "{{" PROJ/` e preencha.
+O kit usa duas convenções de parametrização que parecem iguais mas são preenchidas em
+momentos diferentes e por agentes diferentes:
+
+1. **Install-time `{{PLACEHOLDER}}`** — você (adaptador) preenche **agora**, na hora de
+   instalar/adaptar o kit ao projeto. São os valores desta seção. Busque-os com
+   `grep -rn "{{" PROJ/` e troque todos.
+2. **Scaffold-time `__TOKEN__`** — preenchidos **depois**, pela própria skill de protótipo
+   (`criar-prototipo`/`incrementar-prototipo`) a cada tela/consolidado que ela gera:
+   `__APP__` (nome do app), `__ROLE__` (papel/perfil), `__VER__` (`?v=` cache-bust),
+   `__KEY__` (chave da tela no registry). **Não toque nesses** na adaptação — eles são
+   marcadores do motor cadillac e a skill os resolve sozinha. Se você ver `__...__` num
+   `templates/` ou no consolidado gerado, é scaffold-time, não install-time.
+
+### Install-time `{{...}}` a substituir
+
+**Base (sempre):**
+
+| Placeholder | Default | O que é / quando ativar | Aparece em |
+|-------------|---------|-------------------------|-----------|
+| `{{PROJECT_NAME}}` | — (obrigatório) | Nome do projeto. | `CLAUDE.md`, `docs/ROADMAP.md`, `docs/roadmap/painel-data.json` (`meta.project`), `docs/CONTEXT.md` (implícito), template de protótipo (`index.html` title, `i18n.jsx` appName, comentários), `criar-prototipo/SKILL.md`, hub |
+
+**Protótipo cadillac (se usar frontend):**
+
+| Placeholder | Default | O que é / quando ativar | Aparece em |
+|-------------|---------|-------------------------|-----------|
+| `{{DEFAULT_PROTO_PORT}}` | `8765` | Porta preferida do servidor de protótipo (o `/iniciar-prototipo` varre p/ cima se ocupada). Trocar só se 8765 colidir com algo fixo do projeto. | `iniciar-prototipo.md`, `nova-tela-fe.md`, `guia/05` |
+| `{{LOCALES}}` | `pt-BR,en` | Lista de locales do i18n (estrutura é obrigatória; a **lista** é configurável). Adicione/remova locales conforme o produto. | `i18n` do consolidado/minimal; checklist §6 item 8 |
+| `{{PROJECT_DS}}` | — | Slug do design-system/namespace de telas (`window.<DS>Screens`). Define o prefixo das pastas de consolidado. | `criar-prototipo/SKILL.md`, `incrementar-prototipo/SKILL.md` |
+| `{{ROLE}}` | — | Papel/perfil da superfície (ex.: `admin`, `cliente`). Compõe `<ds>-<papel>/`. | `criar-prototipo/SKILL.md`, `incrementar-prototipo/SKILL.md` |
+| `{{CENTRAL_TOKENS_DOC}}` | — | Path do doc/mapa de tokens central do stack real (destino de tokens promovidos do protótipo). | `melhorar-prototipo.md` |
+| `{{PRODUCT_STACK}}` | — | Stack oficial do produto (ex.: a do `CLAUDE.md`). Usado nos guard-rails de "não confundir protótipo com produção". | `nova-tela-fe.md` |
+| `{{BACKEND_LAYER}}` | — | Camada de backend/BFF do produto. | `nova-tela-fe.md` |
+| `{{COMPLIANCE_REQS}}` | — | Regime de privacidade/compliance do projeto (ex.: `LGPD`, `GDPR`). Governa o item "não logar PII/segredos". | `nova-tela-fe.md`, checklist §6 item 10 |
+| `{{REFERENCE_PROTOTYPE}}` | `_template` | Protótipo de referência a portar de uma task aprovada; o resto fica stub. | `nova-tela-fe.md` |
+| `{{TYPOGRAPHY}}` | — | Tipografia do hub (links de fonte + `font-family`). SEAM no topo do `hub.index.html`. | `criar-prototipo/templates/hub.index.html` |
+
+### Blocos OPCIONAIS (default OFF — ative só se o produto tiver o atributo)
+
+Estes vêm desligados. As invariantes correspondentes em `criar-prototipo/SKILL.md` estão
+marcadas **(opt-in)**: só ative o bloco se a condição se aplicar ao produto de `{{PROJECT_NAME}}`.
+
+**White-label** (ative só se o mesmo shell serve marcas distintas):
+
+| Placeholder | O que é |
+|-------------|---------|
+| `{{TENANT_BRAND}}` / `{{TENANT_INITIALS}}` | Marca e iniciais do tenant (cliente). Só na variante SPLIT multi-papel. |
+| `{{AGENCY_BRAND}}` / `{{AGENCY_INITIALS}}` | Marca e iniciais da agência/fornecedor. Só na variante SPLIT. |
+
+Invariante associada: identidade de marca tem fonte única (`brandFor()` em `ds.jsx`); shell
+e telas leem dela; sem strings de marca hard-coded; o shell **nunca** mostra a marca do fornecedor.
+
+**Cor semântica reservada** (ative só se o produto tiver uma cor com significado reservado):
+
+| Placeholder | O que é |
+|-------------|---------|
+| `{{RESERVED_SEMANTIC_TOKEN}}` | O token de cor reservado (ex.: o `--<algo>` que não pode virar CTA). |
+| `{{RESERVED_MEANING}}` | O significado que esse token carrega (ex.: um estado/janela de tempo). |
+| `{{ADR_REF}}` | O ADR do projeto que registra essa decisão. |
+
+Invariante associada: a cor reservada mantém o significado reservado e **nunca** vira CTA —
+CTA usa `--brand`. O `tone="semantic"` do `SwGroup` é o eixo semântico extra opcional (genérico).
 
 ## Defaults que FICAM (não mexer sem motivo forte)
 - `controle/` e os 4 arquivos `LIMITES.md` / `PLANO.html` / `ESTADO.md` / `LEDGER.md`.
@@ -54,8 +111,9 @@ Edite `PROJ/.claude/settings.json` removendo os blocos de hook que não quer.
 - Mantenha `delegation-audit.py` — só loga em `~/.claude/state/<ns>/`, nunca bloqueia.
 
 ## Checklist final de adaptação
-- [ ] `grep -rn "{{" PROJ/` → zero placeholders sobrando
+- [ ] `grep -rn "{{" PROJ/` → zero placeholders **install-time** sobrando (os `__TOKEN__` scaffold-time FICAM — são do motor)
 - [ ] `grep -rni "<seu-repo-de-vitrine>\|AAAA-MM-DD-app-mvp" PROJ/.claude` → trocados (se usar vitrine)
 - [ ] CLAUDE.md com stack + invariantes reais
+- [ ] Blocos opcionais (white-label / cor-reservada) ativados **só** se o produto tiver o atributo; senão, deixados OFF
 - [ ] `settings.json` só com os hooks dos módulos escolhidos
-- [ ] Passo 3 do INSTALL.md (testes) verde
+- [ ] Passo 3 do INSTALL.md (testes + auto-teste do motor cadillac) verde
