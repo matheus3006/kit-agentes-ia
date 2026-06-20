@@ -8,6 +8,13 @@ Substituimos a etapa Figma por um prototipo HTML+JSX:
 React 18 + Babel standalone via CDN + components/*.jsx separados por dominio.
 Isso permite revisao visual imediata sem dependencia de tooling pesado.
 
+> **Modelo cadillac (default):** para o prototipo multi-tela/multi-papel use
+> `/criar-prototipo` (novo consolidado) ou `/incrementar-prototipo` (crescer um
+> existente). Este roteiro descreve a etapa de prototipo -> implementacao;
+> delegue a geracao do consolidado a essas skills.
+
+Constante de porta: `{{DEFAULT_PROTO_PORT}}` (default `8765`).
+
 Protocolo:
 
 1. Abra task de controle: crie `controle/<task-id>/` com LIMITES.md, PLANO.html,
@@ -23,13 +30,18 @@ Protocolo:
    Tokens via CSS variables (:root light + [data-theme="dark"]).
    i18n centralizada (pt-BR default).
    Showcase com tabs/switchers para alternar entre views, idiomas, temas.
-   Sirva localmente (ex.: `python3 -m http.server 8000` na pasta do prototipo).
+   Sirva localmente via `/iniciar-prototipo` (porta-livre a partir de
+   `{{DEFAULT_PROTO_PORT}}`; serve a raiz de `prototipos_html/` e abre o hub).
    Peca aprovacao explicita ao usuario. Sem aprovacao, pare.
 
 3. Fase 2 — Plano de implementacao no projeto real:
-   Mapeie componentes do prototipo para o stack real do projeto (ver CLAUDE.md
-   > Stack). Nao assuma stack: leia o que o projeto declara.
+   Mapeie componentes do prototipo para o stack real do projeto:
+   `{{PRODUCT_STACK}}` (frontend; ver CLAUDE.md > Stack) e, se houver,
+   `{{BACKEND_LAYER}}` (camada de dados/BFF que a tela vai consumir).
+   Nao assuma stack: leia o que o projeto declara.
    Liste tokens (color/space/radius/type) e modos.
+   Quando portar uma tela ja aprovada, parta de `{{REFERENCE_PROTOTYPE}}`
+   (default `_template`) como referencia; o resto e' stub.
    Preencha PLANO.html > Mapeamento Prototipo -> Producao.
    Peca aprovacao canonica (aprovado | /aprovar-plano).
 
@@ -37,7 +49,8 @@ Protocolo:
    Reproduza o prototipo no stack oficial. Tokens via arquivo central de tema;
    nunca hex/px magicos espalhados pelos componentes.
    Acessibilidade WCAG AA; foco visivel; ordem de tabulacao logica.
-   Seguranca: nao logar dados pessoais, token, segredo.
+   Seguranca: nao logar PII/segredos conforme o regime de privacidade do
+   projeto (`{{COMPLIANCE_REQS}}`); sem token nem segredo em log.
 
 5. Verificacao:
    Todos os ACs do LIMITES.md evidenciados no LEDGER.md.

@@ -3,29 +3,42 @@ description: Workflow guiado para propor melhorias no prototipo HTML+JSX ativo. 
 ---
 
 Conduza o usuario por um workflow guiado para propor melhorias visuais e
-funcionais no prototipo HTML+JSX ativo.
+funcionais no prototipo HTML+JSX ativo (modelo cadillac).
+
+Doc de tokens central: `{{CENTRAL_TOKENS_DOC}}` (o mapa de tokens do projeto
+que vai pro tema do stack real; o adaptador preenche o caminho no install).
+Toda referencia abaixo usa esse placeholder.
 
 Argumento opcional: `$ARGUMENTS` pode conter uma intencao livre (ex.: "card
 do produto, espacamento ruim"). Se preenchido, usar como semente da analise.
+
+> **Este comando MELHORA o que ja existe — nao cria nem cresce telas.**
+> Para **adicionar uma tela** ao prototipo cadillac: use
+> `/incrementar-prototipo` (fundir nova tela/estado/papel num consolidado
+> existente) ou `/criar-prototipo` (novo consolidado do zero). Aqui o foco e'
+> refinar visual/UX/tokens das telas que ja estao no consolidado.
 
 Protocolo:
 
 1. **Detectar prototipo alvo:**
    - Listar `prototipos_html/` excluindo `_template`.
-   - Se 1 pasta → usa essa. Se varias → escolher mais recente por mtime.
-   - Se zero pastas, parar e instruir `/nova-tela-fe`.
-   - Listar os componentes em `components/` pra contexto.
+   - Se 1 consolidado → usa esse. Se varios → escolher mais recente por mtime.
+   - Se zero consolidados, parar e instruir `/criar-prototipo`.
+   - Ler o consolidado (`index.html` + registry / `screens.jsx`, ou
+     `components/` no layout legado single-showcase) pra mapear as telas
+     existentes como contexto.
 
 2. **AskUserQuestion 1 — Escopo principal:**
    - Refinar tela existente
-   - Adicionar nova tela
    - Refinar componentes globais (ui.jsx)
    - Mudar paleta/tokens/identidade visual
+   - Adicionar nova tela → **redireciona:** este comando nao adiciona telas;
+     encaminhe pro `/incrementar-prototipo` (crescer o consolidado) ou
+     `/criar-prototipo` (novo consolidado) e encerre o fluxo aqui.
 
 3. **AskUserQuestion 2 — Detalhamento (depende da resposta 1):**
-   - Se "refinar tela": qual tela (listar as telas existentes no prototipo
-     ativo, lendo os componentes em `components/`)
-   - Se "adicionar nova tela": qual tela (lista candidatas comuns OU "Other")
+   - Se "refinar tela": qual tela (listar as telas registradas no consolidado
+     ativo, lendo o registry / `screens.jsx`)
    - Se "refinar componentes": quais primitivos (Button/Card/Field/...)
    - Se "tokens": qual dimensao (paleta / tipografia / espacamento / radii / sombras)
 
@@ -53,7 +66,7 @@ Protocolo:
    - Propostas de melhoria (3-5 itens priorizados por impacto/esforco)
    - Riscos/trade-offs visuais
    - Mapeamento futuro pro stack real (se a mudanca afetar tokens centrais que
-     vao pro tema central do stack — ex.: `docs/frontend/design-tokens.md`)
+     vao pro tema central do stack — ex.: `{{CENTRAL_TOKENS_DOC}}`)
 
 7. **AskUserQuestion 4 — Confirmar antes do plan:**
    - Aprovar todas as propostas
@@ -81,13 +94,15 @@ Protocolo:
 - NUNCA aplicar mudancas no prototipo antes de o user aprovar via `/aprovar-plano`.
 - Se o user pedir "so muda direto", parar e pedir aprovacao formal — o
   fluxo existe pra evitar drift visual nao-rastreado.
-- NUNCA inventar nova tela sem perguntar primeiro qual ela e' (passo 3).
+- NUNCA adicionar/inventar uma tela neste comando — se o escopo for crescer o
+  prototipo, encaminhe pro `/incrementar-prototipo` ou `/criar-prototipo`
+  (este comando so MELHORA telas existentes).
 - Skills UI/UX sao consultivas — opinioes delas conflitantes vao pra
   sintese (passo 6) pro user decidir, nao auto-aplicar.
 - Tipografia: rodar ui-typography SEMPRE quando a mudanca envolver
   texto visivel (ENFORCEMENT MODE da skill, conforme description).
 - Se a mudanca afetar o mapa de tokens central (ex.:
-  `docs/frontend/design-tokens.md`), propor edicao no plano — nao editar o
+  `{{CENTRAL_TOKENS_DOC}}`), propor edicao no plano — nao editar o
   doc fora do plan aprovado.
 
 **Touch obrigatorio:**

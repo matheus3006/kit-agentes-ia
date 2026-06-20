@@ -13,6 +13,15 @@ de tocar o stack real, você produz um app React 18 que cobre todos os estados d
 todas as telas em jogo, serve localmente, e só porta para produção **após aprovação
 canônica explícita do humano**.
 
+O modelo default é o **cadillac multi-superfície**: cada superfície aprovada (um
+papel, um fluxo, um conjunto coerente de telas) vira um **consolidado** próprio em
+`prototipos_html/<task-id>/`, e um **hub** (`prototipos_html/index.html` com `PROTOS[]`)
+indexa todos os consolidados. As telas nascem num consolidado e *crescem* nele sem
+reescrever o motor. As skills `criar-prototipo` (nascer um consolidado novo) e
+`incrementar-prototipo` (fundir uma tela num consolidado existente) operam esse
+modelo; a skill legada `html-prototype` cobre só o caso single-showcase de tela
+única (ver `05-skills-e-commands.md`).
+
 Por que isto e não Figma:
 
 1. **Zero ferramenta intermediária.** O protótipo é HTML+JSX — o agente escreve,
@@ -26,47 +35,54 @@ Por que isto e não Figma:
 
 A regra dura: **sem aprovação do protótipo, não se implementa nada no stack real.**
 
-## Estrutura de arquivos mínima
+## Estrutura de arquivos (modelo cadillac multi-superfície)
 
-Todo protótipo vive em `prototipos_html/<task-id>/` e tem esta forma:
+Cada superfície aprovada vira um **consolidado** em `prototipos_html/<task-id>/`, e o
+**hub** na raiz indexa todos eles:
 
 ```
-prototipos_html/<task-id>/
-├── index.html                  # Orquestrador: React 18 + Babel via CDN, tokens, showcase shell
-└── components/
+prototipos_html/
+├── index.html                  # HUB: PROTOS[] {key,label,src,wip,ref} + iframes ?v= por consolidado
+└── <task-id>/                  # um CONSOLIDADO por superfície aprovada
+    ├── index.html              # Orquestrador: React 18 + Babel via CDN, tokens, app-shell, registry
     ├── i18n.jsx                # TRANSLATIONS centralizadas + nada hard-coded
+    ├── ds.jsx                  # Design system: tokens, primitivos, ícones, brandFor()
     ├── data.jsx                # Mocks (NUNCA PII ou dados reais)
-    ├── icons.jsx               # SVG inline, sem dependência externa
-    ├── ui.jsx                  # Primitivos (Press, Button, Card, Field, Skeleton, Empty/Error)
-    ├── <dominio>.jsx           # Uma ou mais telas do domínio (ex.: checkout.jsx, board.jsx)
-    └── app.jsx                 # Shell + Showcase wrapper (tabs de estado, switchers, ErrorBoundary)
+    ├── engine.jsx              # Motor cadillac (registry, device-frame, showcase, app-shell) — NÃO editar
+    ├── screens.jsx             # As telas da superfície (cada tela = 1 IIFE, registrada no registry)
+    └── app.jsx                 # Monta o app-shell sobre o registry
 ```
 
-A ordem importa: no `index.html`, os `<script type="text/babel">` carregam nesta
-sequência (i18n → data → icons → ui → domínio → app), porque cada um depende dos
-anteriores em escopo global (sem módulos ES, tudo no mesmo namespace de browser).
+A ordem de load importa: no `index.html`, os `<script type="text/babel">` carregam na
+sequência **`i18n → i18n-chrome → ui → nav → registry → device-frame → showcase →
+app-shell → screens → app`**, porque cada um depende dos anteriores no escopo global
+(sem módulos ES, tudo no mesmo namespace de browser). O motor (`engine.jsx`/`templates/`)
+é copiado e nunca editado in-place — você mexe só em `ds.jsx`/`screens.jsx`/tokens.
 
-**Como começar.** Copie o template de uma vez:
+**Como começar.** Não copie um template à mão — invoque a skill:
 
-```bash
-cp -r prototipos_html/_template prototipos_html/<task-id>
-```
+- **Protótipo novo** (uma superfície do zero) → `/criar-prototipo`. Ela gera o
+  consolidado a partir de `templates/` (motor) + uma DS mínima, e o exemplo neutro
+  embarcado (`criar-prototipo/examples/minimal/`) é o ground-truth do "copie-me".
+- **Crescer um existente** (adicionar uma tela/estado/papel a um consolidado) →
+  `/incrementar-prototipo`. Delta-fusão cirúrgica: registra a tela no registry, sobe
+  o `?v=`, deixa o motor intacto.
 
-O `_template/` já traz os 5 componentes, o `index.html` completo com tokens, e um
-`DemoScreen` que demonstra os 8 estados. Você adapta, não cria do zero.
+Detalhe das 4 camadas, da ordem de load e do fit-to-stage em
+`kit/.claude/skills/criar-prototipo/references/cadillac-model.md`.
 
-## O index.html (orquestrador)
+## O index.html (orquestrador do consolidado)
 
-É o único HTML do protótipo. Responsabilidades, na ordem em que aparecem no arquivo:
+É o único HTML de cada consolidado. Responsabilidades, na ordem em que aparecem:
 
 1. **`<html lang="pt-BR" data-theme="light">`** — o atributo `data-theme` no
-   elemento raiz é o gancho do switcher de tema. O Showcase troca `light`/`dark`
+   elemento raiz é o gancho do switcher de tema. O app-shell troca `light`/`dark`
    chamando `document.documentElement.setAttribute('data-theme', theme)`.
-2. **Fontes via Google Fonts** — `<link>` com preconnect. No template: `Plus Jakarta
-   Sans` (display) + `JetBrains Mono` (mono). Trocar aqui é onde a identidade começa.
+2. **Fontes via `<link>`** — preconnect + a tipografia do projeto (SEAM `{{TYPOGRAPHY}}`).
+   Trocar aqui é onde a identidade começa.
 3. **Bloco `<style>` com os tokens** — `:root` define o tema light; `[data-theme="dark"]`
-   sobrescreve. Mais a "showcase chrome" (header sticky, tabs, switchers). Detalhe na
-   próxima seção.
+   sobrescreve. Device/chrome injetam camadas extras via `<style>`/merge **sem tocar**
+   os tokens canônicos. Detalhe na próxima seção.
 4. **CDNs no fim do `<body>`** — nesta ordem fixa:
    ```html
    <script src="https://unpkg.com/react@18.3.1/umd/react.development.js"></script>
@@ -75,14 +91,16 @@ O `_template/` já traz os 5 componentes, o `index.html` completo com tokens, e 
    ```
    Use os builds `development` do React: stack traces e warnings claros valem mais
    que tamanho num protótipo.
-5. **Os componentes como `type="text/babel"`** — Babel transpila JSX no browser em
-   runtime. Cada `<script type="text/babel" src="components/X.jsx">` na ordem de
-   dependência.
-6. **O mount** — um último bloco inline:
+5. **As camadas como `type="text/babel"`** — Babel transpila JSX no browser em
+   runtime. Cada `<script type="text/babel" src="X.jsx?v=N">` **na ordem de load** e
+   com `?v=` de cache-bust em toda tag local. Cada tela em `screens.jsx` é uma IIFE
+   isolada (hooks no topo, antes de qualquer return condicional) que se registra no
+   `window.<DS>Screens` via `registerScreen`.
+6. **O mount** — um último bloco inline monta o app-shell sobre o registry:
    ```html
    <script type="text/babel">
      const root = ReactDOM.createRoot(document.getElementById('root'));
-     root.render(<Showcase/>);
+     root.render(<AppShell/>);
    </script>
    ```
 
@@ -147,27 +165,30 @@ segundo idioma aparecer: basta adicionar uma chave de locale. O template traz
 pt-BR/en/es como exemplo; o checklist do kit registra que o padrão real adotado foi
 **pt-BR only**, com a estrutura preservada para expansão.
 
-## O Showcase
+## O motor: registry, showcase e app-shell
 
-`app.jsx` exporta o componente `Showcase` — o chrome de revisão que embrulha as
-telas. Componentes:
+O motor cadillac (`engine.jsx` no consolidado, `templates/` na skill) é copiado e
+nunca editado. Suas peças:
 
-- **Header sticky** com brand + as tabs de estado/persona + os switchers (alinhados
-  à direita via `margin-left:auto`).
-- **Tabs** — uma por estado visual (no template: os 8 estados) e/ou uma por
-  persona/role/feature quando o protótipo cobre várias telas.
-- **Switchers** — grupos de botões para alternar **tema** (light/dark), **plataforma**
-  (iOS/Android/Web, quando aplicável) e **idioma** (quando multilíngue). O switcher
-  de tema escreve `data-theme` na raiz; os demais passam props às telas.
-- **ErrorBoundary por tab** (`TabErrorBoundary`, classe React) — uma tela que quebra
-  mostra o stack inline naquela aba e **não derruba o showcase inteiro**. Ela reseta
-  o erro ao trocar de aba (`componentDidUpdate`).
-- **Opcionais:** um `DeviceFrame` (moldura de telefone para telas mobile) e um modo
-  "All Screens" — grade scrollável com todas as telas e zoom controls, para revisão
-  panorâmica.
+- **Registry** (`window.<DS>Screens` + `registerScreen`/`getScreen` + `ScreenBoundary`).
+  Cada tela se auto-registra ao carregar; o app-shell pede a tela ativa por chave.
+  O `ScreenBoundary` isola o erro de uma tela — ela quebra dentro do próprio frame e
+  **não derruba o consolidado inteiro**.
+- **Showcase** — o chrome de revisão: header sticky com brand (de `brandFor()`) +
+  tabs (uma por tela/papel/estado) + switchers à direita. Switchers alternam **tema**
+  (light/dark — escreve `data-theme` na raiz), **plataforma** (iOS/Android/Web) e
+  **idioma** (merge não-destrutivo no i18n); os demais passam props às telas.
+- **Device-frame** — moldura responsiva com `fit-to-stage` via `ResizeObserver`
+  (`useElementSize`/`useIsMobile` → `isMobile?ScaledDevice:DeviceFrame`), `100dvh` e
+  safe-center. É o que faz a tela mobile caber na palco sem distorcer.
+- **App-shell** — orquestra tudo: estado local de `lang`/`theme`/`active`, aplica o
+  tema na raiz, e renderiza a tela ativa dentro do device-frame + `ScreenBoundary`.
 
-Estrutura do `Showcase`: estado local para `lang`/`theme`/`state`, um `useEffect`
-que aplica o tema na raiz, e o `<main>` renderizando `<TabErrorBoundary><Tela .../></TabErrorBoundary>`.
+O **hub** (`prototipos_html/index.html`) é a camada acima dos consolidados: lê o
+manifesto `PROTOS[]` (`{key,label,src,wip,ref}`) e embute cada consolidado num iframe
+com `?v=` de cache-bust. `wip:true` marca um placeholder ainda não pronto. *Crescer*
+um consolidado existente sobe o `?v=` da entrada; *criar* uma superfície nova adiciona
+uma entrada — nunca se mistura os dois.
 
 ## Acessibilidade do protótipo
 
@@ -186,28 +207,36 @@ O protótipo já nasce acessível, porque a a11y vira requisito do porte:
 Duas formas. A canônica é o command:
 
 ```
-/iniciar-prototipo            # detecta a task mais recente em prototipos_html/
+/iniciar-prototipo            # detecta o hub (ou o consolidado mais recente)
 ```
 
-Ele mata qualquer server velho na porta dedicada **8765**, sobe um novo em background
-(`python3 -m http.server 8765`, com `run_in_background`), faz smoke (`curl -sI` → 200)
-e, se o Chrome MCP estiver conectado, abre a URL. A porta 8765 é dedicada para não
-colidir com outros projetos (8000 colide muito). Não suba o server sem background —
-ele morre junto com o comando.
+Ele serve a **raiz** de `prototipos_html/` (não a pasta de uma task isolada), varre a
+porta livre a partir da porta dedicada (`{{DEFAULT_PROTO_PORT}}`, default **8765**) —
+se a preferida estiver ocupada por terceiro, o sweep sobe até a primeira livre e
+reporta qual. Mata só o **próprio** server anterior (PID em `/tmp/proto-srv.pid`),
+nunca processo de terceiro. Sobe em background (`run_in_background`), faz smoke
+(`curl -sI` → 200) e, se existir `prototipos_html/index.html` com `PROTOS[]`, abre o
+**hub**; senão, deep-link do consolidado único. Com Chrome MCP conectado, abre a URL.
+Não suba o server sem background — ele morre junto com o comando.
 
 Manualmente, se preferir:
 
 ```bash
-cd prototipos_html/<task-id>
-python3 -m http.server 8765
-# abrir http://localhost:8765 no Chrome
+cd prototipos_html
+P=8765; while lsof -ti :$P >/dev/null 2>&1; do P=$((P+1)); done
+python3 -m http.server $P
+# abrir http://localhost:$P/ (hub) ou http://localhost:$P/<task-id>/ (consolidado)
 ```
 
 ## Aprovação canônica (o gate)
 
-Antes de portar para o stack real, o checklist exige: showcase sem erros no console,
-todas as personas/views cobertas, os 8 estados marcados, tokens centralizados. E
-então o **gate humano**:
+A aprovação é **por superfície**: cada consolidado aprovado libera o porte daquela
+superfície — não há mais "uma aprovação por task" amarrando todas as telas juntas.
+Antes de portar para o stack real, o checklist exige a régua de conformância **12/12**
+(ver `docs/frontend/html-prototype-checklist.md`, §6): consolidado carrega via 1
+`index.html`, ordem de load preservada, cada tela = 1 IIFE, `?v=` em toda tag local,
+registry coerente, device-frame responsivo, tokens só na camada canônica, i18n
+presente, console limpo, motor não-editado. E então o **gate humano**:
 
 > O usuário precisa digitar literalmente `aprovado` (ou `/aprovar-plano`).
 
@@ -228,41 +257,79 @@ fora de `controle/`/`prototipos_html/`.
 
 - **`/nova-tela-fe`** — o roteiro mestre. Conduz as 3 fases: (1) protótipo HTML+JSX,
   (2) plano de implementação mapeando protótipo → stack real, (3) implementação +
-  verificação. É o ponto de entrada de toda tela nova.
-- **`html-prototype`** (skill) — encapsula o padrão (estrutura, princípios de design,
-  anti-padrões). Dispara em "protótipo / mockup / tela / showcase".
-- **`/iniciar-prototipo`** — sobe o server local (porta 8765) e abre no browser.
-- **`/melhorar-prototipo`** — workflow guiado de iteração: captura escopo via
-  `AskUserQuestion`, carrega skills de UI/UX em paralelo, e gera plano formal via
-  `superpowers:writing-plans`. Nunca aplica mudança sem aprovação.
+  verificação. É o ponto de entrada de toda tela nova; delega a geração do consolidado
+  a `criar-prototipo`/`incrementar-prototipo`.
+- **`criar-prototipo`** (skill) — **default** para protótipo novo: nasce um consolidado
+  multi-tela/multi-papel do zero (modelo cadillac), a partir de `templates/` + DS mínima.
+- **`incrementar-prototipo`** (skill) — *crescer* um consolidado cadillac existente:
+  funde uma tela/estado/papel via delta cirúrgico, sem reescrever o motor.
+- **`html-prototype`** (skill) — **legado**, só para o protótipo single-showcase de
+  tela única rápida; "superseded" por `criar-prototipo`.
+- **`/iniciar-prototipo`** — serve a raiz de `prototipos_html/`, varre porta livre e
+  abre o hub (ou deep-link do consolidado).
+- **`/melhorar-prototipo`** — workflow guiado de iteração no consolidado ativo: captura
+  escopo via `AskUserQuestion`, carrega skills de UI/UX em paralelo, e gera plano formal
+  via `superpowers:writing-plans`. *Melhora* o que existe — para adicionar tela, use
+  `incrementar-prototipo`/`criar-prototipo`. Nunca aplica mudança sem aprovação.
 
 Detalhe de cada um em `05-skills-e-commands.md`.
 
+## Galeria de exemplos vivos
+
+O modelo cadillac nasceu maduro em protótipos reais de domínios bem diferentes — eles
+comprovam que o motor é **agnóstico de domínio**. A galeria é só **ponteiro
+conceitual**: nada dela é copiado para o kit.
+
+- **split multi-papel + white-label** — um consolidado por papel sob um motor
+  compartilhado, com a marca vindo de fonte única (`brandFor()`/variants) e um eixo
+  semântico reservado opcional por tela.
+- **cadillac-delivery** — `device-frame`/`registry` de origem (domínio food-delivery):
+  onde nasceram o `DeviceFrame`/`ScaledDevice` e o registry+router do motor.
+- **mesmo motor, domínio de saúde** — o mesmíssimo motor reaplicado a um app de
+  paciente / painel profissional / PWA, sem tocar a engine.
+
+O que **viaja embarcado** e é a fonte canônica de uso é o exemplo neutro em
+`criar-prototipo/examples/minimal/` — a prova mínima de que o motor + uma DS enxuta
+sobem limpos. Use-o como o "copie-me" de partida.
+
 ## Como adaptar
 
-- **Identidade visual:** troque as fontes no `<link>` do `index.html` e os tokens de
-  marca (`--primary`, `--accent` e variantes) no `:root` + `[data-theme="dark"]`.
-  Tudo o mais herda.
+- **Identidade visual:** troque a tipografia no `<link>` do `index.html` e os tokens de
+  marca (`--brand` e variantes) no `:root` + `[data-theme="dark"]`. Em white-label, a
+  marca tem fonte única em `brandFor()` (`ds.jsx`); o shell lê dela. Tudo o mais herda.
 - **Stack-alvo do porte:** o protótipo é stack-agnóstico de propósito. O destino real
   (Flutter+Riverpod, Next.js+Tailwind, etc.) é lido do `CLAUDE.md > Stack oficial`
   na fase 2 do `/nova-tela-fe`. **Não assuma stack** — leia o que o projeto declara.
-- **Telas do domínio:** adicione `components/<dominio>.jsx`, referencie-o no
-  `index.html` (na ordem certa de scripts) e adicione a tab/view no `app.jsx`.
+- **Telas do domínio:** não adicione telas à mão — invoque `incrementar-prototipo`
+  (crescer um consolidado) ou `criar-prototipo` (superfície nova). A tela vira uma IIFE
+  em `screens.jsx`, registrada no `window.<DS>Screens`; o mock de domínio fica só em
+  `data.jsx`/`i18n`. O motor (`engine.jsx`/`templates/`) permanece intacto.
 - **Anti-padrões a evitar:** Tailwind ou frameworks pesados no protótipo; qualquer
   build step (vite/webpack — mata o zero-friction); lógica de negócio real (use mocks
-  em `data.jsx`); acoplar o protótipo ao stack final (perde a iteração rápida).
+  em `data.jsx`); editar o motor in-place; acoplar o protótipo ao stack final.
 
 ## Arquivos no kit
 
-- `kit/prototipos_html/_template/index.html` — orquestrador completo com tokens.
-- `kit/prototipos_html/_template/components/{i18n,data,icons,ui,app}.jsx` — os 5 componentes-base.
-- `kit/prototipos_html/_template/README.md` — guia de uso do template.
-- `kit/docs/frontend/html-prototype-checklist.md` — o checklist canônico (estados, tokens, gate).
+- `kit/.claude/skills/criar-prototipo/SKILL.md` — eixo NASCER (modelo cadillac, default).
+- `kit/.claude/skills/criar-prototipo/templates/` — o motor cadillac (8 arquivos:
+  app-shell, device-frame, registry, i18n-chrome, screen.iife, showcase, hub.index.html,
+  consolidado.index.html).
+- `kit/.claude/skills/criar-prototipo/examples/minimal/` — exemplo neutro embarcado (5
+  arquivos: index.html, ds.jsx, engine.jsx, screens.jsx, app.jsx).
+- `kit/.claude/skills/criar-prototipo/references/cadillac-model.md` — 4 camadas, ordem
+  de load, fit-to-stage, galeria de origem.
+- `kit/.claude/skills/incrementar-prototipo/SKILL.md` + `references/incremento-delta.md`
+  — eixo CRESCER (delta-fusão cirúrgica).
+- `kit/.claude/skills/html-prototype/SKILL.md` — a skill legada (single-showcase).
+- `kit/prototipos_html/_template/` — template legado single-showcase (mantido p/ compat).
+- `kit/docs/frontend/html-prototype-checklist.md` — o checklist canônico + a régua 12/12 (§6).
 - `kit/docs/frontend/design-tokens.md` — mapa de tokens central (para o porte ao stack real).
-- `kit/.claude/skills/html-prototype/SKILL.md` — a skill.
 - `kit/.claude/commands/{nova-tela-fe,iniciar-prototipo,melhorar-prototipo}.md` — os commands.
 
 ## Cross-referências
 
-- `05-skills-e-commands.md` — `/nova-tela-fe`, `html-prototype` e os commands de protótipo em detalhe.
+- `05-skills-e-commands.md` — `criar-prototipo`, `incrementar-prototipo`, `html-prototype`,
+  `/nova-tela-fe` e os commands de protótipo em detalhe.
+- `kit/.claude/skills/criar-prototipo/references/cadillac-model.md` — o motor cadillac
+  (4 camadas, ordem de load, fit-to-stage) e a galeria de origem.
 - `01-controle-de-contexto.md` — o gate de aprovação e o `fase_prototipo` que libera `prototipos_html/`.

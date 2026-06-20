@@ -11,7 +11,7 @@ Os três são mecanismos distintos do Claude Code, com gatilhos e escopos difere
 
 - **Skill** — uma capacidade com `description` que o agente carrega **por
   reconhecimento de gatilho**. O agente lê a `description` e decide invocar quando o
-  contexto bate (ex.: "iniciar uma tela" dispara `html-prototype`). Vive em
+  contexto bate (ex.: "novo protótipo multi-tela" dispara `criar-prototipo`). Vive em
   `.claude/skills/<nome>/SKILL.md`. É conhecimento + procedimento que o agente puxa
   quando precisa.
 - **Command** — um slash-command **invocado explicitamente** pelo humano (ou pelo
@@ -22,16 +22,23 @@ Os três são mecanismos distintos do Claude Code, com gatilhos e escopos difere
   Roda em sua própria janela de contexto e devolve um relatório. É paralelismo e
   isolamento de contexto.
 
-O kit usa: 3 skills (procedimentos recorrentes do método), 5 commands (pontos de
+O kit usa: 5 skills (procedimentos recorrentes do método), 5 commands (pontos de
 entrada manuais), 1 subagent (pesquisa read-only).
 
-## As 3 SKILLS do kit
+## As 5 SKILLS do kit
 
 | Skill | Trigger (description) | O que faz |
 |---|---|---|
+| `criar-prototipo` | Protótipo HTML+JSX **novo** de uma ou mais telas/fluxos/papéis (modelo cadillac) — do zero | Nasce um consolidado multi-superfície a partir do motor cadillac (`templates/` + DS mínima); **default** para protótipo (ver `03-prototipo-frontend.md`) |
+| `incrementar-prototipo` | **Crescer** um protótipo cadillac que já existe — fundir nova tela/estado/papel | Delta-fusão cirúrgica: registra a tela no registry, sobe o `?v=`, motor intacto |
+| `html-prototype` | **Apenas** protótipo legado de tela única (single-showcase) rápido | Gera o protótipo single-showcase; "superseded" por `criar-prototipo` |
 | `execute-closure` | Ao concluir a execução de uma task em `controle/` | Pipeline de fechamento (abaixo) |
-| `html-prototype` | Nova tela/fluxo/componente; pedido de protótipo/mockup/showcase | Gera o protótipo HTML+JSX padrão (ver `03-prototipo-frontend.md`) |
 | `mermaid-flow` | Precisa visualizar arquitetura, fluxo UX ou fluxo técnico | Gera diagramas `.mmd` (ver `04-sistema-de-documentacao.md`) |
+
+As três skills de protótipo são **disambiguantes por gatilho**: `criar-prototipo` é o
+default para qualquer protótipo novo (multi-tela/multi-papel/hub); `incrementar-prototipo`
+é o caminho para *adicionar* tela a um consolidado existente; `html-prototype` cobre só
+o nicho legado de tela única. As descriptions são escritas para rotear sem ambiguidade.
 
 ### execute-closure (em detalhe)
 
@@ -69,8 +76,8 @@ importantes; fechar sem rodar lint/testes.
 | `/aprovar-plano` | Registra a aprovação canônica do plano da task ativa; o watchdog grava o approval e a fase pode ir para `execucao`. É a frase exact-match que libera o gate (ver `01-controle-de-contexto.md`). |
 | `/no-control` | Executa a solicitação do turno **sem** criar/atualizar `controle/` — bypass do watchdog válido só no turno atual. Mantém segurança, deny-list, não-logar e proteção contra destrutivo. |
 | `/nova-tela-fe` | Roteiro mestre de frontend: abre a task de controle, conduz a fase de protótipo HTML+JSX, depois o plano de porte ao stack real, depois a implementação + verificação. Ponto de entrada de toda tela nova. |
-| `/iniciar-prototipo` | Detecta a task mais recente em `prototipos_html/`, mata server velho na porta **8765**, sobe novo em background, faz smoke (`curl` → 200) e abre no Chrome MCP se disponível. |
-| `/melhorar-prototipo` | Workflow guiado de iteração no protótipo ativo: `AskUserQuestion` para escopo, carrega skills de UI/UX em paralelo, gera plano formal via `superpowers:writing-plans`. Nunca aplica mudança sem aprovação. |
+| `/iniciar-prototipo` | Serve a **raiz** de `prototipos_html/`, varre a **porta livre** a partir de `{{DEFAULT_PROTO_PORT}}` (default 8765; sweep p/ cima se ocupada), mata só o próprio server anterior, sobe em background, faz smoke (`curl` → 200) e abre o **hub** (ou deep-link do consolidado) no Chrome MCP se disponível. |
+| `/melhorar-prototipo` | Workflow guiado de iteração no consolidado ativo: `AskUserQuestion` para escopo, carrega skills de UI/UX em paralelo, gera plano formal via `superpowers:writing-plans`. **cadillac-aware**: *melhora* o que já existe — para **adicionar tela** use `incrementar-prototipo`/`criar-prototipo`. Nunca aplica mudança sem aprovação. |
 
 Nota sobre `/aprovar-plano`: o arquivo do command contém literalmente a palavra
 `aprovado` mais a instrução de atualizar `ESTADO.md` para `fase: execucao` e
@@ -161,8 +168,12 @@ hook é o gate duro.
 
 ## Arquivos no kit
 
+- `kit/.claude/skills/criar-prototipo/` — eixo NASCER (modelo cadillac): `SKILL.md` +
+  `templates/` (motor) + `examples/minimal/` (exemplo neutro) + `references/cadillac-model.md`.
+- `kit/.claude/skills/incrementar-prototipo/` — eixo CRESCER: `SKILL.md` +
+  `references/incremento-delta.md`.
+- `kit/.claude/skills/html-prototype/SKILL.md` — geração de protótipo legado (single-showcase).
 - `kit/.claude/skills/execute-closure/SKILL.md` — pipeline de fechamento.
-- `kit/.claude/skills/html-prototype/SKILL.md` — geração de protótipo.
 - `kit/.claude/skills/mermaid-flow/SKILL.md` — diagramas de fluxo.
 - `kit/.claude/commands/{aprovar-plano,no-control,nova-tela-fe,iniciar-prototipo,melhorar-prototipo}.md` — os 5 commands.
 - `kit/.claude/agents/researcher.md` — o subagent read-only.
@@ -171,6 +182,6 @@ hook é o gate duro.
 ## Cross-referências
 
 - `01-controle-de-contexto.md` — o gate que `/aprovar-plano` e `/no-control` operam.
-- `03-prototipo-frontend.md` — `html-prototype`, `/nova-tela-fe`, `/iniciar-prototipo`,
-  `/melhorar-prototipo` em contexto de frontend.
+- `03-prototipo-frontend.md` — `criar-prototipo`, `incrementar-prototipo`, `html-prototype`,
+  `/nova-tela-fe`, `/iniciar-prototipo`, `/melhorar-prototipo` em contexto de frontend.
 - `INSTALL.md` — instalação do kit e das dependências externas no ambiente.

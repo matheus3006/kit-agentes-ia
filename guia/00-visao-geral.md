@@ -20,9 +20,9 @@ escrita à mão; a própria instalação do kit é auto-verificável.
 |---|-------|---------|------|
 | 1 | **Controle de contexto** | Toda edição de produção exige uma task ativa, planejada e aprovada em `controle/<task-id>/` (4 arquivos + 7 fases). Imposto pelo watchdog. | [01](01-controle-de-contexto.md) |
 | 2 | **Hooks de validação** | 6 hooks Python (stdlib) plugados em eventos do Claude Code: 1 guardrail que bloqueia, 1 automação, 1 telemetria, 3 lembretes. | [02](02-hooks-de-validacao.md) |
-| 3 | **Protótipo HTML+JSX** | Antes de tocar código de produção de frontend, um protótipo React+Babel standalone (sem build) cobre todos os estados visuais e é aprovado. Substitui Figma. | [03](03-prototipo-frontend.md) |
+| 3 | **Protótipo HTML+JSX** | Antes de tocar código de produção de frontend, um protótipo React+Babel standalone (sem build) cobre todos os estados visuais e é aprovado. Modelo **cadillac multi-superfície** (consolidado por superfície + hub), via `criar-prototipo`/`incrementar-prototipo`. Substitui Figma. | [03](03-prototipo-frontend.md) |
 | 4 | **Sistema de documentação** | Glossário canônico (CONTEXT.md), roadmap com STATE.md vivo por épico, ADRs numerados, painel gerado de JSON, smoke tests. | [04](04-sistema-de-documentacao.md) |
-| 5 | **Skills & commands** | A camada de UX que automatiza o método: skills (execute-closure, html-prototype, mermaid-flow), commands (/aprovar-plano, /nova-tela-fe, …) e o subagent researcher. | [05](05-skills-e-commands.md) |
+| 5 | **Skills & commands** | A camada de UX que automatiza o método: skills (criar-prototipo, incrementar-prototipo, html-prototype, execute-closure, mermaid-flow), commands (/aprovar-plano, /nova-tela-fe, …) e o subagent researcher. | [05](05-skills-e-commands.md) |
 
 ## Como os pilares se encaixam
 1. O **Pilar 1** é o núcleo — sem ele nada funciona. É o ciclo de vida da task.
@@ -56,7 +56,7 @@ kit/                          ← os artefatos copiáveis
   .claude/
     settings.json             wiring dos hooks + deny-list de segredos
     hooks/                    6 hooks + 2 suítes de teste
-    skills/                   execute-closure · html-prototype · mermaid-flow
+    skills/                   criar-prototipo · incrementar-prototipo · html-prototype · execute-closure · mermaid-flow
     commands/                 aprovar-plano · no-control · nova-tela-fe · iniciar-prototipo · melhorar-prototipo
     agents/researcher.md      subagent read-only de pesquisa
   controle/_TEMPLATE/         os 4 arquivos-modelo de task
